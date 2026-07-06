@@ -2,12 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, LayoutGrid, User } from 'lucide-react'
+import { TrendingUp, LayoutGrid, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const links = [
   { href: '/dashboard', label: 'Home', icon: LayoutGrid },
-  { href: '/modules', label: 'Modules', icon: BookOpen },
+  { href: '/progress', label: 'Progress', icon: TrendingUp },
   { href: '/profile', label: 'Profile', icon: User },
 ]
 
