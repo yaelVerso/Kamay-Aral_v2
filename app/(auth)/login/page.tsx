@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
-import { shadowEmailFor } from '@/lib/shadow-email'
 
 function destinationFor(role: string | undefined) {
   if (role === 'admin') return '/admin/overview'
@@ -31,8 +30,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const supabase = createClient({ persist: rememberMe })
-      const trimmed = identifier.trim()
-      const email = trimmed.includes('@') ? trimmed : shadowEmailFor(trimmed)
+      const email = identifier.trim()
 
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw new Error('Incorrect email/username or password')
@@ -57,14 +55,15 @@ export default function LoginPage() {
       <CardContent className="pt-0">
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="identifier">Email or Username</Label>
+            <Label htmlFor="identifier">Email</Label>
             <Input
               id="identifier"
-              placeholder="you@example.com or username"
+              type="email"
+              placeholder="you@example.com"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               required
-              autoComplete="username"
+              autoComplete="email"
               className='bg-w'
             />
           </div>

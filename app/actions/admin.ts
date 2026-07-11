@@ -2,7 +2,6 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { shadowEmailFor } from '@/lib/shadow-email'
 import { sendTeacherInviteEmail, sendStudentInviteEmail } from '@/lib/email/templates'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
@@ -84,13 +83,13 @@ export async function createStudentAction(payload: {
   const lastName = payload.lastName.trim()
   const fullName = `${firstName} ${lastName}`.trim()
   const username = payload.username.trim().toLowerCase()
-  const shadowEmail = shadowEmailFor(username)
+  const email = payload.email.trim()
 
   const admin = createAdminClient()
 
   const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
     type: 'invite',
-    email: shadowEmail,
+    email,
     options: { redirectTo: `${SITE_URL}/setup-password?role=student` },
   })
   if (linkError) throw new Error(linkError.message)
@@ -104,7 +103,7 @@ export async function createStudentAction(payload: {
     first_name: firstName,
     last_name: lastName,
     username,
-    email: payload.email.trim(),
+    email,
   })
   if (studentError) {
     await admin.auth.admin.deleteUser(userId)
@@ -112,7 +111,7 @@ export async function createStudentAction(payload: {
   }
 
   try {
-    await sendStudentInviteEmail(payload.email.trim(), fullName, username, linkData.properties.action_link)
+    await sendStudentInviteEmail(email, fullName, username, linkData.properties.action_link)
   } catch {
     throw new Error('Account created but invite email failed to send. Use Resend Invite to try again.')
   }
