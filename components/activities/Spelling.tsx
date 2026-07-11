@@ -38,11 +38,11 @@ export default function Spelling({ item, onNext }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-center text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+      <p className="text-center text-xl font-semibold uppercase tracking-widest text-muted-foreground">
         Type what sign this is
       </p>
 
-      <div className="relative aspect-video w-full rounded-2xl bg-black overflow-hidden shadow-lg">
+      <div className="relative aspect-video w-full rounded-2xl bg-black overflow-hidden">
         <video
           key={item.videoPath}
           src={item.videoPath}
@@ -62,9 +62,9 @@ export default function Spelling({ item, onNext }: Props) {
             onChange={(e) => !submitted && setAnswer(e.target.value)}
             placeholder="Type your answer…"
             className={cn(
-              'h-14 text-center text-lg font-semibold rounded-xl border-2',
-              submitted && isCorrect && 'border-emerald-500 bg-emerald-50 text-emerald-700',
-              submitted && !isCorrect && 'border-red-500 bg-red-50 text-red-700',
+              'h-18 text-center !text-2xl md:!text-2xl font-semibold rounded-xl border-2',
+              submitted && isCorrect && 'border-[#579F10] bg-[#D8F2BF]',
+              submitted && !isCorrect && 'border-[#C61518] bg-[#FFDEDF]',
             )}
             autoCapitalize="none"
             autoCorrect="off"
@@ -74,8 +74,8 @@ export default function Spelling({ item, onNext }: Props) {
           {submitted && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
               {isCorrect
-                ? <CheckCircle2 className="h-6 w-6 text-emerald-500" />
-                : <XCircle className="h-6 w-6 text-red-500" />}
+                ? <CheckCircle2 className="h-10 w-10 text-[#579F10]" />
+                : <XCircle className="h-10 w-10 text-[#C61518]" />}
             </div>
           )}
         </div>
@@ -84,7 +84,7 @@ export default function Spelling({ item, onNext }: Props) {
           <Button
             type="submit"
             disabled={!answer.trim()}
-            className="w-full py-6 text-base font-semibold bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40"
+            className="w-full py-6 text-lg font-semibold bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] hover:bg-[#00B7CB] disabled:opacity-40"
           >
             Check
           </Button>
@@ -92,18 +92,18 @@ export default function Spelling({ item, onNext }: Props) {
           <>
             <div className={cn(
               'rounded-2xl p-4 text-center',
-              isCorrect ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700',
+              isCorrect ? 'bg-[#D8F2BF] text-[#579F10]' : 'bg-[#FFDEDF] text-[#C61518]',
             )}>
               <p className="font-bold text-lg">{isCorrect ? '🎉 Correct!' : '❌ Not quite'}</p>
               {!isCorrect && (
                 <p className="text-sm mt-1">
-                  Accepted: <strong>{item.acceptedAnswers.join(' / ')}</strong>
+                  Correct Answer: <strong>{item.acceptedAnswers.join(' / ')}</strong>
                 </p>
               )}
             </div>
             <Button
               onClick={() => onNext(isCorrect)}
-              className={cn('w-full py-6 text-base font-semibold', isCorrect ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-indigo-600 hover:bg-indigo-700')}
+              className={cn('w-full py-6 text-lg font-semibold', isCorrect ? 'bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] hover:bg-[#00B7CB]' : 'bg-[#FCCF52] shadow-[0_4px_0_#D0A530] hover:bg-[#FFC31B]')}
             >
               Continue →
             </Button>

@@ -169,7 +169,7 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
         </div>
         <button
           onClick={() => router.push(`/module/${mod.id}/${submodule.id}`)}
-          className="w-full max-w-xs rounded-xl bg-indigo-600 py-4 text-base font-semibold text-white hover:bg-indigo-700 transition-colors"
+          className="w-full max-w-xs rounded-xl py-4 text-lg font-bold text-white bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] hover:bg-[#00B7CB] transition-colors "
         >
           Back to {submodule.shortTitle}
         </button>
@@ -192,7 +192,7 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
         </button>
         <div className="flex-1 h-2.5 rounded-full bg-muted overflow-hidden">
           <div
-            className="h-full rounded-full bg-indigo-500 transition-all duration-300"
+            className="h-full rounded-full bg-[#007B89] transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>

@@ -54,16 +54,16 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
       <div className="flex items-center gap-2 px-4 pt-6 pb-3">
         <Link
           href={`/module/${mod.id}`}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          className="flex items-center gap-1 text-base text-muted-foreground hover:text-foreground"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-5 w-5" />
           {mod.title}
         </Link>
         <span className="text-muted-foreground">/</span>
-        <span className="text-sm font-bold">{submodule.shortTitle}</span>
+        <span className="text-base font-bold">{submodule.shortTitle}</span>
       </div>
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 px-4">
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 px-4 mt-3">
         {/* Item strip — mobile: horizontal scroll, hidden on lg+ */}
         <div className="lg:hidden mb-4">
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -87,7 +87,7 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
         {/* Main viewer */}
         <div className="flex-1 space-y-4">
           {/* Video */}
-          <div className="relative aspect-video w-full rounded-2xl bg-black overflow-hidden ">
+          <div className="relative aspect-video w-full rounded-2xl bg-black overflow-hidden">
             <video
               key={selectedItem.videoPath}
               src={selectedItem.videoPath}
@@ -122,18 +122,18 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
             <button
               onClick={prev}
               disabled={currentIndex === 0}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl border py-3 text-sm font-medium disabled:opacity-40 hover:bg-muted transition-colors"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white border border-[#DAD2C5] shadow-[0_4px_0_#DAD2C5] py-3 text-lg font-semibold disabled:opacity-40 hover:bg-muted transition-colors"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-6 w-6" />
               Previous
             </button>
             <button
               onClick={next}
               disabled={currentIndex === submodule.items.length - 1}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#007B89] py-3 text-sm font-medium text-white disabled:opacity-40 hover:bg-indigo-700 transition-colors"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] py-3 text-lg font-semibold text-white disabled:opacity-40 hover:bg-[#00A8BB] transition-colors"
             >
               Next
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-6 w-6" />
             </button>
           </div>
         </div>

@@ -46,8 +46,9 @@ export default async function ProfilePage() {
           </div>
         </div>
       )}
-
-      <LogoutButton />
+      <div className="flex justify-center">
+        <LogoutButton />
+      </div>
     </div>
   )
 }

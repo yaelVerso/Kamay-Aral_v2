@@ -36,7 +36,7 @@ export default async function DashboardPage() {
         Modules
       </h2>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-6">
         {MODULES.map((mod) => {
           const totalItems = mod.subModules.reduce((sum, sm) => sum + sm.items.length, 0)
           const percent = moduleProgress(mod.id, totalItems)
@@ -50,11 +50,11 @@ export default async function DashboardPage() {
                 }`}
             >
               <div className="flex items-start justify-between">
-                <span className="text-3xl">{mod.icon}</span>
+                <span className="text-3xl lg:text-5xl">{mod.icon}</span>
                 <ProgressRing percent={percent} size={52} strokeWidth={5} />
               </div>
               <div>
-                <p className="font-extrabold text-white text-xl">{mod.title}</p>
+                <p className="lg:mt-10 font-extrabold text-white text-xl">{mod.title}</p>
                 <p className="text-xs text-[#fafafabd] mt-0.5">
                   {hasContent ? `${mod.subModules.length} sections` : 'Coming soon'}
                 </p>

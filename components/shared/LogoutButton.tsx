@@ -17,7 +17,7 @@ export default function LogoutButton() {
   return (
     <Button
       variant="outline"
-      className="w-full gap-2 text-destructive border-destructive/30 hover:bg-destructive/5"
+      className="min-w-xl gap-2 text-destructive border-destructive/30 hover:bg-destructive/5"
       onClick={handleLogout}
     >
       <LogOut className="h-4 w-4" />
