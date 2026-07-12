@@ -28,6 +28,16 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
+  // Server Action invocations POST to the same URL as the calling page and
+  // carry this header. Redirecting that request (e.g. the public-route
+  // bounce below, once a session cookie has just been set mid-action) breaks
+  // Next.js's expected action-response format and throws "An unexpected
+  // response was received from the server" client-side. Actions do their
+  // own auth checks internally, so middleware should never intercept them.
+  if (request.headers.has('next-action')) {
+    return supabaseResponse
+  }
+
   function destinationFor(role: string | undefined) {
     if (role === 'admin') return '/admin/overview'
     if (role === 'teacher') return '/teacher/dashboard'

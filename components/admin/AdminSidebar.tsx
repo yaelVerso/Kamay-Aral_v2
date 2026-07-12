@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, GraduationCap, Users, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, GraduationCap, Users, Settings, LogOut, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { recordAuditLog } from '@/app/actions/audit'
 
 const links = [
   { href: '/admin/overview', label: 'Overview', icon: LayoutDashboard },
@@ -20,6 +21,7 @@ export default function AdminSidebar() {
   const [open, setOpen] = useState(false)
 
   async function handleLogout() {
+    await recordAuditLog({ action: 'auth.logout', description: 'logged out' })
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
@@ -51,7 +53,20 @@ export default function AdminSidebar() {
           )
         })}
       </nav>
-      <div className="mt-auto px-2 pb-4">
+      <div className="mt-auto px-2 pb-4 flex flex-col gap-1">
+        <Link
+          href="/admin/settings"
+          onClick={() => setOpen(false)}
+          className={cn(
+            'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+            pathname.startsWith('/admin/settings')
+              ? 'bg-indigo-50 text-indigo-600'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+          )}
+        >
+          <Settings className="h-4 w-4" />
+          Settings
+        </Link>
         <Button variant="ghost" size="sm" onClick={handleLogout} className="w-full justify-start gap-1.5 text-muted-foreground">
           <LogOut className="h-4 w-4" />
           Sign out

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { Module, SubModule, SignItem } from '@/content/types'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
@@ -31,6 +31,14 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
     setSelectedItem(item)
     markViewed(item)
   }
+
+  // The first item is shown immediately via the useState initializer above,
+  // never passing through selectItem() — without this, it's displayed but
+  // never actually recorded as viewed unless the student re-clicks it.
+  useEffect(() => {
+    markViewed(submodule.items[0])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const currentIndex = submodule.items.findIndex((i) => i.id === selectedItem.id)
 

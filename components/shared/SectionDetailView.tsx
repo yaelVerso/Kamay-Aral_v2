@@ -14,12 +14,13 @@ interface StudentRow {
 
 interface Props {
   sectionId: string
+  sectionName: string
   students: StudentRow[]
   isEnabled: (submoduleId: string) => boolean
   studentHref: (studentId: string) => string
 }
 
-export default function SectionDetailView({ sectionId, students, isEnabled, studentHref }: Props) {
+export default function SectionDetailView({ sectionId, sectionName, students, isEnabled, studentHref }: Props) {
   return (
     <>
       <div>
@@ -74,7 +75,9 @@ export default function SectionDetailView({ sectionId, students, isEnabled, stud
                 </div>
                 <QuizToggle
                   sectionId={sectionId}
+                  sectionName={sectionName}
                   submoduleId={sm.id}
+                  submoduleTitle={sm.title}
                   initialEnabled={isEnabled(sm.id)}
                 />
               </div>

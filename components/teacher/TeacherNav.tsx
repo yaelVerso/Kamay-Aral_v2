@@ -7,6 +7,7 @@ import { LayoutDashboard, Users, LogOut, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { recordAuditLog } from '@/app/actions/audit'
 
 const links = [
   { href: '/teacher/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -19,6 +20,7 @@ export default function TeacherNav() {
   const [open, setOpen] = useState(false)
 
   async function handleLogout() {
+    await recordAuditLog({ action: 'auth.logout', description: 'logged out' })
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')

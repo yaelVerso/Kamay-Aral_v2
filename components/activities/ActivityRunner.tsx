@@ -9,6 +9,7 @@ import SignToPicture from './SignToPicture'
 import DragDropMatch from './DragDropMatch'
 import Spelling from './Spelling'
 import { createClient } from '@/lib/supabase/client'
+import { recordAuditLog } from '@/app/actions/audit'
 
 interface ActivityStep {
   type: ActivityType
@@ -150,6 +151,11 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
       score: finalScore,
       total: scorableSteps.length,
     }).eq('id', attemptId)
+
+    await recordAuditLog({
+      action: 'quiz.submit',
+      description: `submitted quiz for ${submodule.title} — ${finalScore}/${scorableSteps.length}`,
+    })
   }
 
   if (finished) {

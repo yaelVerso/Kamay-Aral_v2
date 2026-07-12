@@ -3,14 +3,17 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { recordAuditLog } from '@/app/actions/audit'
 
 interface Props {
   sectionId: string
+  sectionName: string
   submoduleId: string
+  submoduleTitle: string
   initialEnabled: boolean
 }
 
-export default function QuizToggle({ sectionId, submoduleId, initialEnabled }: Props) {
+export default function QuizToggle({ sectionId, sectionName, submoduleId, submoduleTitle, initialEnabled }: Props) {
   const [enabled, setEnabled] = useState(initialEnabled)
   const [loading, setLoading] = useState(false)
 
@@ -27,6 +30,10 @@ export default function QuizToggle({ sectionId, submoduleId, initialEnabled }: P
         )
       if (error) throw error
       setEnabled(next)
+      await recordAuditLog({
+        action: 'quiz.toggle',
+        description: `${next ? 'enabled' : 'disabled'} quiz for ${submoduleTitle} in section ${sectionName}`,
+      })
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to update quiz setting')
     } finally {

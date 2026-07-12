@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { sendTeacherInviteEmail, sendStudentInviteEmail } from '@/lib/email/templates'
+import { recordAuditLog } from '@/app/actions/audit'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
 
@@ -52,6 +53,8 @@ export async function createTeacherAction(payload: {
   } catch {
     throw new Error('Account created but invite email failed to send. Use Resend Invite to try again.')
   }
+
+  await recordAuditLog({ action: 'teacher.create', description: `created teacher account for ${fullName}` })
 }
 
 export async function createStudentAction(payload: {
@@ -112,29 +115,79 @@ export async function createStudentAction(payload: {
   } catch {
     throw new Error('Account created but invite email failed to send. Use Resend Invite to try again.')
   }
+
+  let description = `created student account for ${fullName}`
+  if (payload.sectionId) {
+    const { data: section } = await admin.from('sections').select('name').eq('id', payload.sectionId).single()
+    if (section) description += ` in section ${section.name}`
+  }
+  await recordAuditLog({ action: 'student.create', description })
 }
 
 export async function deleteTeacherAction(teacherId: string) {
   await requireAdmin()
   const admin = createAdminClient()
+
+  const { data: teacher } = await admin.from('teachers').select('full_name').eq('id', teacherId).single()
+
   const { error } = await admin.auth.admin.deleteUser(teacherId)
   if (error) throw new Error(error.message)
+
+  await recordAuditLog({ action: 'teacher.delete', description: `deleted teacher account for ${teacher?.full_name ?? 'a teacher'}` })
 }
 
 export async function deleteStudentAction(studentId: string) {
   await requireAdmin()
   const admin = createAdminClient()
+
+  const { data: student } = await admin.from('students').select('full_name').eq('id', studentId).single()
+
   const { error } = await admin.auth.admin.deleteUser(studentId)
   if (error) throw new Error(error.message)
+
+  await recordAuditLog({ action: 'student.delete', description: `deleted student account for ${student?.full_name ?? 'a student'}` })
 }
 
 export async function createSectionForTeacherAction(payload: { teacherId: string; name: string }) {
   await requireAdmin()
   const admin = createAdminClient()
+  const name = payload.name.trim()
+
   const { error } = await admin
     .from('sections')
-    .insert({ teacher_id: payload.teacherId, name: payload.name.trim() })
+    .insert({ teacher_id: payload.teacherId, name })
   if (error) throw new Error(error.message)
+
+  const { data: teacher } = await admin.from('teachers').select('full_name').eq('id', payload.teacherId).single()
+  await recordAuditLog({
+    action: 'section.create',
+    description: `created section ${name} for ${teacher?.full_name ?? 'a teacher'}`,
+  })
+}
+
+export async function deleteSectionAction(sectionId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const isAdmin = user.user_metadata?.role === 'admin'
+  const client = isAdmin ? createAdminClient() : supabase
+
+  const { data: section } = await client
+    .from('sections')
+    .select('id, name, teacher_id')
+    .eq('id', sectionId)
+    .single()
+  if (!section) throw new Error('Section not found')
+  if (!isAdmin && section.teacher_id !== user.id) throw new Error('Not authorized')
+
+  const { error } = await client.from('sections').delete().eq('id', sectionId)
+  if (error) throw new Error(error.message)
+
+  await recordAuditLog({
+    action: 'section.delete',
+    description: `deleted section ${section.name}`,
+  })
 }
 
 export async function removeStudentFromSectionAction(studentId: string) {
@@ -162,8 +215,19 @@ export async function removeStudentFromSectionAction(studentId: string) {
   }
 
   const client = isAdmin ? createAdminClient() : supabase
+
+  const { data: before } = await client.from('students').select('full_name, section_id').eq('id', studentId).single()
+  const { data: oldSection } = before?.section_id
+    ? await client.from('sections').select('name').eq('id', before.section_id).single()
+    : { data: null }
+
   const { error } = await client.from('students').update({ section_id: null }).eq('id', studentId)
   if (error) throw new Error(error.message)
+
+  await recordAuditLog({
+    action: 'student.remove_from_section',
+    description: `removed ${before?.full_name ?? 'a student'} from section ${oldSection?.name ?? 'unknown'}`,
+  })
 }
 
 export async function addExistingStudentToSectionAction(payload: { studentId: string; sectionId: string }) {
@@ -187,7 +251,7 @@ export async function addExistingStudentToSectionAction(payload: { studentId: st
 
   const { data: target } = await client
     .from('students')
-    .select('section_id')
+    .select('full_name, section_id')
     .eq('id', payload.studentId)
     .single()
   if (target?.section_id) throw new Error('Student is already assigned to a section')
@@ -197,4 +261,10 @@ export async function addExistingStudentToSectionAction(payload: { studentId: st
     .update({ section_id: payload.sectionId })
     .eq('id', payload.studentId)
   if (error) throw new Error(error.message)
+
+  const { data: section } = await client.from('sections').select('name').eq('id', payload.sectionId).single()
+  await recordAuditLog({
+    action: 'student.add_to_section',
+    description: `added ${target?.full_name ?? 'a student'} to section ${section?.name ?? 'unknown'}`,
+  })
 }

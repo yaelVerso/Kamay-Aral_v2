@@ -45,6 +45,12 @@ export type Database = {
         Update: { id?: string; attempt_id?: string; activity_type?: string; item_id?: string; answer_given?: string | null; is_correct?: boolean }
         Relationships: []
       }
+      audit_logs: {
+        Row: { id: string; actor_id: string | null; actor_name: string; actor_role: string; action: string; description: string; created_at: string }
+        Insert: { id?: string; actor_id?: string | null; actor_name: string; actor_role: string; action: string; description: string; created_at?: string }
+        Update: { id?: string; actor_id?: string | null; actor_name?: string; actor_role?: string; action?: string; description?: string; created_at?: string }
+        Relationships: []
+      }
     }
     Views: {
       user_roles: {

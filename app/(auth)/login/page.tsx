@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
+import { recordAuditLog } from '@/app/actions/audit'
 
 function destinationFor(role: string | undefined) {
   if (role === 'admin') return '/admin/overview'
@@ -18,7 +18,6 @@ function destinationFor(role: string | undefined) {
 }
 
 export default function LoginPage() {
-  const router = useRouter()
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -35,8 +34,19 @@ export default function LoginPage() {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw new Error('Incorrect email or password')
 
-      router.push(destinationFor(data.user.user_metadata?.role))
-      router.refresh()
+      // Awaited on purpose: firing this concurrently with the redirect races
+      // the login's session-cookie write against this Server Action's own
+      // request, which can hit middleware before the new session cookie is
+      // in place and throw "refresh token not found". Awaiting first
+      // guarantees the cookie is settled before this (or the navigation)
+      // fires. recordAuditLog never throws, so this can't block on error.
+      await recordAuditLog({ action: 'auth.login', description: 'logged in' })
+
+      // Full page navigation, not router.push — a soft client-side
+      // navigation here was intermittently rendering with a stale
+      // pre-login router cache, requiring a manual refresh to show the
+      // destination dashboard. A real navigation always fetches fresh.
+      window.location.href = destinationFor(data.user.user_metadata?.role)
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Login failed')
     } finally {

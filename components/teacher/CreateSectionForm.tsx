@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
+import { recordAuditLog } from '@/app/actions/audit'
 
 export default function CreateSectionForm() {
   const [name, setName] = useState('')
@@ -22,6 +23,7 @@ export default function CreateSectionForm() {
       const { data: { user } } = await supabase.auth.getUser()
       const { error } = await supabase.from('sections').insert({ teacher_id: user!.id, name: name.trim() })
       if (error) throw new Error(error.message)
+      await recordAuditLog({ action: 'section.create', description: `created section ${name.trim()}` })
       setName('')
       toast.success(`Section "${name.trim()}" created`)
       router.refresh()

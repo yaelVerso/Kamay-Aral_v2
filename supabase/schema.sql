@@ -267,6 +267,33 @@ create policy "Admin: full access quiz_answers" on public.quiz_answers
   for all using (public.is_admin());
 
 -- ============================================================
+-- AUDIT LOGS
+-- Records account/management actions by admins, teachers, and
+-- students. actor_id is intentionally NOT a foreign key so log
+-- rows survive account deletion; actor_name/actor_role are
+-- denormalized for the same reason. Only inserted via the
+-- service-role client (app/actions/audit.ts) — there is no
+-- insert policy for `authenticated`, so client sessions can
+-- never write (or forge) a log entry directly.
+-- ============================================================
+create table public.audit_logs (
+  id uuid primary key default gen_random_uuid(),
+  actor_id uuid,
+  actor_name text not null,
+  actor_role text not null,
+  action text not null,
+  description text not null,
+  created_at timestamptz not null default now()
+);
+alter table public.audit_logs enable row level security;
+
+-- Admin: read only. No insert/update/delete policy for
+-- `authenticated` at all — writes only ever happen via the
+-- service-role client, which bypasses RLS.
+create policy "Admin: read audit logs" on public.audit_logs
+  for select using (public.is_admin());
+
+-- ============================================================
 -- USER ROLES VIEW
 -- Helper to determine if an auth.user is a teacher or student.
 -- ============================================================
@@ -321,3 +348,7 @@ grant select, insert, update, delete on public.quiz_settings to authenticated, s
 grant select, insert, update, delete on public.quiz_attempts to authenticated, service_role;
 grant select, insert, update, delete on public.quiz_answers to authenticated, service_role;
 grant select on public.user_roles to authenticated, service_role;
+-- audit_logs: authenticated only ever needs to read (admin UI); all writes
+-- go through the service-role client in app/actions/audit.ts.
+grant select on public.audit_logs to authenticated;
+grant select, insert, update, delete on public.audit_logs to service_role;
