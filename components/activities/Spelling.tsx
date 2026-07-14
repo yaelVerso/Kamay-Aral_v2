@@ -9,14 +9,15 @@ import { Input } from '@/components/ui/input'
 
 interface Props {
   item: SignItem
-  onNext: (correct: boolean) => void
+  mode: 'activity' | 'quiz'
+  onNext: (correct: boolean, answerGiven?: string) => void
 }
 
 function normalize(s: string) {
   return s.trim().toLowerCase()
 }
 
-export default function Spelling({ item, onNext }: Props) {
+export default function Spelling({ item, mode, onNext }: Props) {
   const [answer, setAnswer] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -33,7 +34,12 @@ export default function Spelling({ item, onNext }: Props) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!answer.trim()) return
-    setSubmitted(true)
+    if (mode === 'quiz') {
+      const correct = item.acceptedAnswers.some((a) => normalize(a) === normalize(answer))
+      onNext(correct, answer)
+    } else {
+      setSubmitted(true)
+    }
   }
 
   return (

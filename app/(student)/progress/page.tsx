@@ -11,6 +11,12 @@ export default async function ProgressPage() {
     .select('module_id, item_id')
     .eq('student_id', user!.id)
 
+  const { data: attempts } = await supabase
+    .from('quiz_attempts')
+    .select('submodule_id, score, total, submitted_at')
+    .eq('student_id', user!.id)
+    .not('submitted_at', 'is', null)
+
   function moduleProgress(moduleId: string, totalItems: number): number {
     if (totalItems === 0) return 0
     const viewed = learnRows?.filter((r) => r.module_id === moduleId).length ?? 0
@@ -44,6 +50,24 @@ export default async function ProgressPage() {
           })}
         </div>
       </div>
+
+      {attempts && attempts.length > 0 && (
+        <div>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Completed Quizzes
+          </h2>
+          <div className="space-y-2">
+            {attempts.map((a) => (
+              <div key={a.submodule_id} className="flex items-center justify-between rounded-xl border bg-white p-3 shadow-sm">
+                <p className="text-sm font-medium">{a.submodule_id}</p>
+                <span className="text-sm font-bold text-indigo-600">
+                  {a.score}/{a.total}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

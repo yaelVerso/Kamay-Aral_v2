@@ -26,7 +26,16 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${nunito.variable} h-full`}>
+    <html lang="en" className={`${nunito.variable} h-full`} suppressHydrationWarning>
+      <head>
+        {/* Runs before hydration so a saved font-size preference applies
+            immediately instead of flashing at the default size first. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var f=localStorage.getItem('fontSize');if(f)document.documentElement.setAttribute('data-font-size',f);}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="min-h-full bg-background font-sans antialiased">
         {children}
         <Toaster richColors position="top-center" />

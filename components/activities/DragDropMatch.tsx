@@ -6,17 +6,15 @@ import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { shuffle } from '@/lib/shuffle'
 
 interface Props {
   items: SignItem[]   // exactly 3
-  onNext: (correct: boolean) => void
+  mode: 'activity' | 'quiz'
+  onNext: (correct: boolean, answerGiven?: string) => void
 }
 
-function shuffle<T>(arr: T[]): T[] {
-  return [...arr].sort(() => Math.random() - 0.5)
-}
-
-export default function DragDropMatch({ items, onNext }: Props) {
+export default function DragDropMatch({ items, mode, onNext }: Props) {
   const [videoOrder, setVideoOrder] = useState<SignItem[]>([])
   const [pictureOrder, setPictureOrder] = useState<SignItem[]>([])
   // matches[videoId] = pictureId
@@ -57,7 +55,12 @@ export default function DragDropMatch({ items, onNext }: Props) {
 
   function handleSubmit() {
     if (!allMatched) return
-    setSubmitted(true)
+    const finalScore = items.filter((item) => matches[item.id] === item.id).length
+    if (mode === 'quiz') {
+      onNext(finalScore === items.length, `${finalScore}/${items.length} matched`)
+    } else {
+      setSubmitted(true)
+    }
   }
 
   const allCorrect = submitted && items.every((item) => matches[item.id] === item.id)

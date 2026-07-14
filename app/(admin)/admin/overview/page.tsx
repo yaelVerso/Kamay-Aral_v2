@@ -59,7 +59,7 @@ export default async function AdminOverviewPage() {
         </Card>
       </div>
 
-      <RecentActivityWidget logs={recentLogs ?? []} viewAllHref="/admin/settings" />
+      <RecentActivityWidget logs={recentLogs ?? []} viewAllHref="/admin/audit-logs" />
     </div>
   )
 }

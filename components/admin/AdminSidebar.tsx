@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, GraduationCap, Users, Settings, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, GraduationCap, Users, ScrollText, Settings, LogOut, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,7 @@ const links = [
   { href: '/admin/overview', label: 'Overview', icon: LayoutDashboard },
   { href: '/admin/faculty', label: 'Faculty Management', icon: GraduationCap },
   { href: '/admin/students', label: 'Student Registry', icon: Users },
+  { href: '/admin/audit-logs', label: 'Audit Logs', icon: ScrollText },
 ]
 
 export default function AdminSidebar() {

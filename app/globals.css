@@ -129,6 +129,18 @@
   html {
     @apply font-sans;
   }
+
+  html[data-font-size='small'] {
+    font-size: 87.5%;
+  }
+
+  html[data-font-size='large'] {
+    font-size: 112.5%;
+  }
+
+  html[data-font-size='xl'] {
+    font-size: 125%;
+  }
 }
 
 @layer utilities {

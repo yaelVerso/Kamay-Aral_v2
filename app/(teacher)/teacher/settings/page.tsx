@@ -1,31 +1,42 @@
 import { createClient } from '@/lib/supabase/server'
-import SettingsTabs from '@/components/admin/SettingsTabs'
-import TeacherAuditLogList from '@/components/teacher/TeacherAuditLogList'
-import { getTeacherAuditLogs } from '@/lib/queries/teacher-audit-logs'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import ChangePasswordForm from '@/components/shared/ChangePasswordForm'
 
 export default async function TeacherSettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // 200-row cap for v1 — server-side pagination is the follow-up if this grows.
-  const { logs, sections } = await getTeacherAuditLogs(supabase, user!.id, { limit: 200 })
+  const { data: teacher } = await supabase
+    .from('teachers')
+    .select('full_name')
+    .eq('id', user!.id)
+    .single()
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Activity history for your sections.</p>
+        <p className="text-muted-foreground">Manage your account.</p>
       </div>
 
-      <SettingsTabs
-        tabs={[
-          {
-            id: 'audit-logs',
-            label: 'Audit Logs',
-            content: <TeacherAuditLogList logs={logs} sections={sections} />,
-          },
-        ]}
-      />
+      <Card className="max-w-md">
+        <CardHeader>
+          <CardTitle className="text-base">Account</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          <p className="text-sm font-medium">{teacher?.full_name ?? user?.user_metadata?.full_name ?? 'Teacher'}</p>
+          <p className="text-sm text-muted-foreground">{user?.email}</p>
+        </CardContent>
+      </Card>
+
+      <Card className="max-w-md">
+        <CardHeader>
+          <CardTitle className="text-base">Change Password</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChangePasswordForm />
+        </CardContent>
+      </Card>
     </div>
   )
 }

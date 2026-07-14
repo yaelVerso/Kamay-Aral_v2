@@ -3,8 +3,6 @@ import { MODULES } from '@/content/registry'
 import Link from 'next/link'
 import { Users, AlertTriangle } from 'lucide-react'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import RecentActivityWidget from '@/components/shared/RecentActivityWidget'
-import { getTeacherAuditLogs } from '@/lib/queries/teacher-audit-logs'
 
 export default async function TeacherDashboardPage() {
   const supabase = await createClient()
@@ -51,8 +49,6 @@ export default async function TeacherDashboardPage() {
     return studentCounts?.filter((s) => s.section_id === sectionId).length ?? 0
   }
 
-  const { logs: recentLogs } = await getTeacherAuditLogs(supabase, user!.id, { limit: 5 })
-
   return (
     <div className="space-y-6">
       <div>
@@ -96,46 +92,42 @@ export default async function TeacherDashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start">
-        <div className="flex h-full flex-col rounded-xl border bg-white shadow-sm">
-          <div className="flex items-center justify-between px-4 pt-4 pb-3">
-            <h2 className="font-semibold">Your Sections</h2>
-            <Link href="/teacher/sections" className="text-sm text-[#0BC2D7] font-semibold hover:underline">
-              Manage →
+      <div className="flex h-full flex-col rounded-xl border bg-white shadow-sm">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3">
+          <h2 className="font-semibold">Your Sections</h2>
+          <Link href="/teacher/sections" className="text-sm text-[#0BC2D7] font-semibold hover:underline">
+            Manage →
+          </Link>
+        </div>
+        {sections && sections.length > 0 ? (
+          <div className="max-h-80 space-y-2 overflow-y-auto px-4 pb-4">
+            {sections.map((section) => (
+              <Link
+                key={section.id}
+                href={`/teacher/sections/${section.id}`}
+                className="flex items-center justify-between rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                    <Users className="h-5 w-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">{section.name}</p>
+                    <p className="text-sm text-muted-foreground">{countForSection(section.id)} students</p>
+                  </div>
+                </div>
+                <span className="text-muted-foreground">›</span>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="mx-4 mb-4 rounded-xl border border-dashed p-8 text-center text-muted-foreground">
+            <p className="mb-3">No sections yet.</p>
+            <Link href="/teacher/sections" className="text-sm font-medium text-indigo-600 hover:underline">
+              Create your first section →
             </Link>
           </div>
-          {sections && sections.length > 0 ? (
-            <div className="max-h-80 space-y-2 overflow-y-auto px-4 pb-4">
-              {sections.map((section) => (
-                <Link
-                  key={section.id}
-                  href={`/teacher/sections/${section.id}`}
-                  className="flex items-center justify-between rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
-                      <Users className="h-5 w-5 text-indigo-600" />
-                    </div>
-                    <div>
-                      <p className="font-semibold">{section.name}</p>
-                      <p className="text-sm text-muted-foreground">{countForSection(section.id)} students</p>
-                    </div>
-                  </div>
-                  <span className="text-muted-foreground">›</span>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="mx-4 mb-4 rounded-xl border border-dashed p-8 text-center text-muted-foreground">
-              <p className="mb-3">No sections yet.</p>
-              <Link href="/teacher/sections" className="text-sm font-medium text-indigo-600 hover:underline">
-                Create your first section →
-              </Link>
-            </div>
-          )}
-        </div>
-
-        <RecentActivityWidget logs={recentLogs} viewAllHref="/teacher/settings" />
+        )}
       </div>
 
       <div>
