@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import type { Module, SubModule, SignItem, ActivityType } from '@/content/types'
 import { useRouter } from 'next/navigation'
-import { X, CheckCircle2, XCircle, ChevronDown } from 'lucide-react'
+import { X, CheckCircle2, XCircle, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import LessonCard from './LessonCard'
 import SignToPicture from './SignToPicture'
 import DragDropMatch from './DragDropMatch'
@@ -67,7 +67,7 @@ function buildActivitySteps(submodule: SubModule): ActivityStep[] {
   return steps
 }
 
-const QUIZ_SIGN_TO_PICTURE_COUNT = 4
+const QUIZ_SIGN_TO_PICTURE_COUNT = 5
 const QUIZ_SPELLING_COUNT = 4
 const QUIZ_DRAG_DROP_GROUP_COUNT = 2
 
@@ -77,13 +77,20 @@ export function getQuizQuestionCount(submodule: SubModule): number {
   return QUIZ_SIGN_TO_PICTURE_COUNT + QUIZ_SPELLING_COUNT + (hasDragDrop ? QUIZ_DRAG_DROP_GROUP_COUNT : 0)
 }
 
+/** Point value of a step — a Drag & Drop group is worth one point per pair (3), everything else is worth 1. */
+function stepPoints(step: ActivityStep): number {
+  if (step.type === 'lesson-card') return 0
+  if (step.type === 'drag-drop-match') return step.groupItems?.length ?? 3
+  return 1
+}
+
 /**
  * Picks `count` items from `pool`, guaranteeing every item appears at
  * least once before any repeats when `count >= pool.length` (draws full
  * shuffled cycles back-to-back). This is what makes a small submodule's
  * items all show up across a quiz instead of random chance leaving some
- * out — two independent 4-item draws from a 7-item pool would only cover
- * ~6 of the 7 on average.
+ * out — two independent draws from the same pool would only cover a
+ * subset on average.
  */
 function pickItemsCoveringAll(pool: SignItem[], count: number): SignItem[] {
   if (pool.length === 0) return []
@@ -96,16 +103,15 @@ function pickItemsCoveringAll(pool: SignItem[], count: number): SignItem[] {
 }
 
 /**
- * Builds a fixed-length 10-question quiz, grouped by type — 4 Sign to
- * Picture, then 4 Spelling, then 2 Drag & Drop Match groups — each section
- * independently shuffled. Grouping by type (instead of interleaving per
- * item) prevents a question in one type from giving away the answer to
- * the very next question about the same item.
+ * Builds a fixed-length quiz, grouped by type — 5 Sign to Picture, then
+ * 4 Spelling, then 2 Drag & Drop Match groups — each section independently
+ * shuffled. Grouping by type (instead of interleaving per item) prevents
+ * a question in one type from giving away the answer to the very next
+ * question about the same item.
  *
- * Sign to Picture and Spelling share one coverage-guaranteeing draw (8
- * items total) rather than two independent 4-item draws, so a submodule
- * with 8 or fewer items has every one of them appear somewhere in the
- * quiz instead of a random subset.
+ * Sign to Picture and Spelling share one coverage-guaranteeing draw (9
+ * items total) rather than two independent draws, so a submodule with 9
+ * or fewer items has every one of them appear somewhere in the quiz.
  */
 function buildQuizSteps(submodule: SubModule): ActivityStep[] {
   const hasDragDrop = submodule.activitySequence.includes('drag-drop-match')
@@ -146,69 +152,73 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
   const router = useRouter()
   const steps = useMemo(() => buildSteps(submodule, mode), [submodule, mode])
   const [stepIndex, setStepIndex] = useState(0)
-  const [score, setScore] = useState(0)
-  const [answers, setAnswers] = useState<QuizAnswer[]>([])
+  // Index-aligned with `steps`. A Drag & Drop step holds 3 entries (one per
+  // pair); everything else holds 1. `null` means the step isn't answered yet.
+  const [stepAnswers, setStepAnswers] = useState<(QuizAnswer[] | null)[]>(() => steps.map(() => null))
   const [finished, setFinished] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [showReview, setShowReview] = useState(false)
   const itemById = useMemo(() => new Map(submodule.items.map((it) => [it.id, it])), [submodule.items])
 
   const current = steps[stepIndex]
-  const progress = ((stepIndex) / steps.length) * 100
+  const progress = (stepIndex / steps.length) * 100
 
-  async function handleNext(correct?: boolean, answerId?: string) {
-    if (mode === 'quiz' && current.type !== 'lesson-card' && correct !== undefined) {
-      const newAnswer: QuizAnswer = {
-        activity_type: current.type,
-        item_id: current.item.id,
-        answer_given: answerId ?? null,
-        is_correct: correct,
-      }
-      const updatedAnswers = [...answers, newAnswer]
-      setAnswers(updatedAnswers)
-      if (correct) setScore((s) => s + 1)
+  const answers = useMemo(() => stepAnswers.flatMap((a) => a ?? []), [stepAnswers])
+  const score = useMemo(() => answers.filter((a) => a.is_correct).length, [answers])
+  const totalPoints = useMemo(() => steps.reduce((sum, s) => sum + stepPoints(s), 0), [steps])
+  const currentAnswer = stepAnswers[stepIndex] ?? null
+  const currentAnswered = current?.type === 'lesson-card' || currentAnswer !== null
 
-      if (stepIndex === steps.length - 1) {
-        await submitQuiz(updatedAnswers, score + (correct ? 1 : 0))
-        setFinished(true)
-        return
-      }
-    } else if (mode === 'activity') {
-      if (correct) setScore((s) => s + 1)
-    }
-
-    if (stepIndex < steps.length - 1) {
-      setStepIndex((i) => i + 1)
-    } else {
-      setFinished(true)
-    }
+  function recordAnswer(results: QuizAnswer[]) {
+    setStepAnswers((prev) => {
+      const next = [...prev]
+      next[stepIndex] = results
+      return next
+    })
   }
 
-  async function submitQuiz(finalAnswers: QuizAnswer[], finalScore: number) {
+  function goPrevious() {
+    if (stepIndex > 0) setStepIndex((i) => i - 1)
+  }
+
+  async function goNext() {
+    if (!currentAnswered) return
+    if (stepIndex < steps.length - 1) {
+      setStepIndex((i) => i + 1)
+      return
+    }
+    if (mode === 'quiz') {
+      setSubmitting(true)
+      await submitQuiz()
+      setSubmitting(false)
+    }
+    setFinished(true)
+  }
+
+  async function submitQuiz() {
     if (!attemptId) return
     const supabase = createClient()
-    const scorableSteps = steps.filter((s) => s.type !== 'lesson-card')
 
     await supabase.from('quiz_answers').insert(
-      finalAnswers.map((a) => ({ ...a, attempt_id: attemptId }))
+      answers.map((a) => ({ ...a, attempt_id: attemptId }))
     )
     await supabase.from('quiz_attempts').update({
       submitted_at: new Date().toISOString(),
-      score: finalScore,
-      total: scorableSteps.length,
+      score,
+      total: totalPoints,
     }).eq('id', attemptId)
 
     await recordAuditLog({
       action: 'quiz.submit',
-      description: `submitted quiz for ${submodule.title} — ${finalScore}/${scorableSteps.length}`,
+      description: `submitted quiz for ${submodule.title} — ${score}/${totalPoints}`,
     })
   }
 
   if (finished) {
-    const scorableCount = steps.filter((s) => s.type !== 'lesson-card').length
-    const percent = scorableCount > 0 ? Math.round((score / scorableCount) * 100) : 100
+    const percent = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 100
 
     function answerLabel(a: QuizAnswer) {
-      if (a.activity_type === 'sign-to-picture') {
+      if (a.activity_type === 'sign-to-picture' || a.activity_type === 'drag-drop-match') {
         return itemById.get(a.answer_given ?? '')?.label ?? a.answer_given
       }
       return a.answer_given
@@ -219,9 +229,9 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
         <div className="text-6xl">{percent >= 80 ? '🎉' : percent >= 50 ? '🙂' : '💪'}</div>
         <div>
           <h2 className="text-2xl font-bold">{mode === 'quiz' ? 'Quiz complete!' : 'Activity complete!'}</h2>
-          {scorableCount > 0 && (
+          {totalPoints > 0 && (
             <p className="text-muted-foreground mt-1">
-              You got <strong>{score}/{scorableCount}</strong> ({percent}%) correct
+              You got <strong>{score}/{totalPoints}</strong> ({percent}%) correct
             </p>
           )}
         </div>
@@ -251,9 +261,7 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
                           <p className="font-semibold text-sm">{item?.label ?? a.item_id}</p>
                           {!a.is_correct && (
                             <p className="text-xs text-muted-foreground">
-                              {a.activity_type === 'drag-drop-match'
-                                ? answerLabel(a)
-                                : <>You answered: <strong>{answerLabel(a) || '—'}</strong></>}
+                              You answered: <strong>{answerLabel(a) || '—'}</strong>
                             </p>
                           )}
                         </div>
@@ -304,32 +312,67 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
       </div>
 
       {/* Activity content */}
-      <div className="flex-1 px-4 pb-6 overflow-y-auto">
+      <div className="flex-1 px-4 pb-4 overflow-y-auto">
         {current.type === 'lesson-card' && (
-          <LessonCard item={current.item} onNext={() => handleNext()} />
+          <LessonCard key={stepIndex} item={current.item} />
         )}
         {current.type === 'sign-to-picture' && (
           <SignToPicture
+            key={stepIndex}
             item={current.item}
             distractors={current.distractors ?? []}
             mode={mode}
-            onNext={(correct, answerGiven) => handleNext(correct, answerGiven)}
+            initialAnswer={currentAnswer?.[0]?.answer_given ?? null}
+            onAnswer={(correct, answerGiven) => recordAnswer([
+              { activity_type: 'sign-to-picture', item_id: current.item.id, answer_given: answerGiven, is_correct: correct },
+            ])}
           />
         )}
         {current.type === 'drag-drop-match' && (
           <DragDropMatch
+            key={stepIndex}
             items={current.groupItems ?? [current.item]}
             mode={mode}
-            onNext={(correct, answerGiven) => handleNext(correct, answerGiven)}
+            initialMatches={currentAnswer ? Object.fromEntries(currentAnswer.map((a) => [a.item_id, a.answer_given ?? ''])) : null}
+            onAnswer={(results) => recordAnswer(results.map((r) => ({
+              activity_type: 'drag-drop-match',
+              item_id: r.itemId,
+              answer_given: r.matchedLabel,
+              is_correct: r.correct,
+            })))}
           />
         )}
         {current.type === 'spelling' && (
           <Spelling
+            key={stepIndex}
             item={current.item}
             mode={mode}
-            onNext={(correct, answerGiven) => handleNext(correct, answerGiven)}
+            initialAnswer={currentAnswer?.[0]?.answer_given ?? null}
+            onAnswer={(correct, answerGiven) => recordAnswer([
+              { activity_type: 'spelling', item_id: current.item.id, answer_given: answerGiven, is_correct: correct },
+            ])}
           />
         )}
+      </div>
+
+      {/* Previous / Next — width-matched to the activity content (lg:w-3/4 lg:mx-auto) above */}
+      <div className="flex gap-3 px-4 pb-4 lg:w-3/4 lg:mx-auto">
+        <button
+          onClick={goPrevious}
+          disabled={stepIndex === 0}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white border border-[#DAD2C5] shadow-[0_4px_0_#DAD2C5] py-3 text-lg font-semibold disabled:opacity-40 hover:bg-muted transition-colors"
+        >
+          <ChevronLeft className="h-6 w-6" />
+          Previous
+        </button>
+        <button
+          onClick={goNext}
+          disabled={!currentAnswered || submitting}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] py-3 text-lg font-semibold text-white disabled:opacity-40 hover:bg-[#00A8BB] transition-colors"
+        >
+          {submitting ? 'Submitting…' : stepIndex === steps.length - 1 ? 'Finish' : 'Next'}
+          {!submitting && <ChevronRight className="h-6 w-6" />}
+        </button>
       </div>
     </div>
   )

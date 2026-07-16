@@ -29,12 +29,31 @@ export default function StudentProgressView({ studentName, sectionId, sectionNam
     return answers.filter((a) => a.attempt_id === attemptId)
   }
 
+  /** Average of each attempted sub-module's percent score, skipping ones not yet taken. */
+  function moduleAverage(moduleId: string, subModuleIds: string[]) {
+    const percents = subModuleIds
+      .map((smId) => getAttempt(smId))
+      .filter((a): a is NonNullable<typeof a> => !!a?.submitted_at && !!a.total)
+      .map((a) => (a.score ?? 0) / a.total! * 100)
+    if (percents.length === 0) return null
+    return Math.round(percents.reduce((sum, p) => sum + p, 0) / percents.length)
+  }
+
   return (
-    <ModuleAccordion
-      sections={MODULES.filter((mod) => mod.subModules.length > 0).map((mod) => ({
+    <>
+      <h2 className="font-semibold mb-3">Performance</h2>
+      <ModuleAccordion
+      sections={MODULES.filter((mod) => mod.subModules.length > 0).map((mod) => {
+        const avg = moduleAverage(mod.id, mod.subModules.map((sm) => sm.id))
+        return {
         id: mod.id,
         title: mod.title,
         icon: mod.icon,
+        badge: avg !== null ? (
+          <span className={`text-xs font-bold ${avg >= 80 ? 'text-emerald-600' : avg >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
+            {avg}% avg
+          </span>
+        ) : undefined,
         content: (
           <>
             {mod.subModules.map((sm) => {
@@ -108,7 +127,9 @@ export default function StudentProgressView({ studentName, sectionId, sectionNam
             })}
           </>
         ),
-      }))}
-    />
+        }
+      })}
+      />
+    </>
   )
 }

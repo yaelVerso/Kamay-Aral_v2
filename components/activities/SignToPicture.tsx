@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import type { SignItem } from '@/content/types'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
@@ -12,29 +12,36 @@ interface Props {
   item: SignItem
   distractors: SignItem[]
   mode: 'activity' | 'quiz'
-  onNext: (correct: boolean, answerGiven?: string) => void
+  /** Previously saved choice id, if this step was already answered (quiz: editable, activity: view-only). */
+  initialAnswer?: string | null
+  onAnswer: (correct: boolean, answerGiven: string) => void
 }
 
-export default function SignToPicture({ item, distractors, mode, onNext }: Props) {
-  const [choices, setChoices] = useState<SignItem[]>([])
-  const [selected, setSelected] = useState<string | null>(null)
-  const [locked, setLocked] = useState(false)
-
-  useEffect(() => {
-    setChoices(shuffle([item, ...distractors.slice(0, 3)]))
-    setSelected(null)
-    setLocked(false)
-  }, [item, distractors])
+export default function SignToPicture({ item, distractors, mode, initialAnswer, onAnswer }: Props) {
+  const [choices] = useState<SignItem[]>(() => shuffle([item, ...distractors.slice(0, 3)]))
+  const [selected, setSelected] = useState<string | null>(initialAnswer ?? null)
+  // Practice-mode reveal lock only — quiz mode never locks (always editable, never reveals).
+  const [locked, setLocked] = useState(mode === 'activity' && !!initialAnswer)
+  // Quiz-only "pressed" feedback — true right after Save, pops back up once the choice changes again.
+  const [saved, setSaved] = useState(mode === 'quiz' && !!initialAnswer)
 
   const answered = locked
   const correct = selected === item.id
 
-  function handleConfirm() {
+  function handleSelect(id: string) {
+    if (locked) return
+    setSelected(id)
+    setSaved(false)
+  }
+
+  function handleSave() {
     if (!selected) return
     if (mode === 'quiz') {
-      onNext(selected === item.id, selected)
+      onAnswer(selected === item.id, selected)
+      setSaved(true)
     } else {
       setLocked(true)
+      onAnswer(selected === item.id, selected)
     }
   }
 
@@ -64,7 +71,7 @@ export default function SignToPicture({ item, distractors, mode, onNext }: Props
           return (
             <button
               key={choice.id}
-              onClick={() => !locked && setSelected(choice.id)}
+              onClick={() => handleSelect(choice.id)}
               disabled={locked}
               className={cn(
                 'relative flex flex-col items-center gap-2 rounded-2xl bg-white p-6 shadow-xs border-2 border-[#DAD2C5] transition-all active:scale-95',
@@ -106,25 +113,18 @@ export default function SignToPicture({ item, distractors, mode, onNext }: Props
         </div>
       )}
 
-      {answered && (
+      {(mode === 'quiz' || !answered) && (
         <Button
-          onClick={() => onNext(correct, selected ?? undefined)}
+          onClick={handleSave}
+          disabled={!selected}
           className={cn(
-            'w-full py-6 text-lg font-semibold',
-            correct ? 'bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] hover:bg-[#00B7CB]' : 'bg-[#FCCF52] shadow-[0_4px_0_#D0A530] hover:bg-[#FFC31B]',
+            'w-full py-6 text-lg font-semibold transition-all disabled:opacity-40',
+            mode === 'quiz' && saved
+              ? 'bg-[#0BC2D7] shadow-none translate-y-1 opacity-90'
+              : 'bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] hover:bg-[#00B7CB]',
           )}
         >
-          Continue →
-        </Button>
-      )}
-
-      {!answered && (
-        <Button
-          onClick={handleConfirm}
-          disabled={!selected}
-          className="w-full py-6 text-lg font-semibold bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] hover:bg-[#00B7CB] disabled:opacity-40"
-        >
-          Submit Answer
+          {mode === 'quiz' ? (saved ? 'Saved ✓' : 'Save Answer') : 'Submit Answer'}
         </Button>
       )}
     </div>

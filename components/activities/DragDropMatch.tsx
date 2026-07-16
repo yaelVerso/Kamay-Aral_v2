@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import type { SignItem } from '@/content/types'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
@@ -8,35 +8,47 @@ import { CheckCircle2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { shuffle } from '@/lib/shuffle'
 
+interface MatchResult {
+  itemId: string
+  correct: boolean
+  matchedLabel: string
+}
+
+// One distinct color per pair slot (by the item's stable position in `items`,
+// not display order) so a matched video/picture pair are visually linked by
+// color instead of everything turning the same generic blue.
+const PAIR_COLORS = [
+  { border: 'border-[#8B5CF6]', bg: 'bg-[#EDE6FB]', text: 'text-[#6D28D9]' },
+  { border: 'border-[#0BC2D7]', bg: 'bg-[#D5ECEF]', text: 'text-[#007B89]' },
+  { border: 'border-[#F472B6]', bg: 'bg-[#FCE7F3]', text: 'text-[#BE185D]' },
+]
+
 interface Props {
   items: SignItem[]   // exactly 3
   mode: 'activity' | 'quiz'
-  onNext: (correct: boolean, answerGiven?: string) => void
+  /** Previously saved matches (videoId -> pictureId), if this step was already answered. */
+  initialMatches?: Record<string, string> | null
+  onAnswer: (results: MatchResult[]) => void
 }
 
-export default function DragDropMatch({ items, mode, onNext }: Props) {
-  const [videoOrder, setVideoOrder] = useState<SignItem[]>([])
-  const [pictureOrder, setPictureOrder] = useState<SignItem[]>([])
+export default function DragDropMatch({ items, mode, initialMatches, onAnswer }: Props) {
+  const [videoOrder] = useState<SignItem[]>(() => shuffle(items))
+  const [pictureOrder] = useState<SignItem[]>(() => shuffle(items))
   // matches[videoId] = pictureId
-  const [matches, setMatches] = useState<Record<string, string>>({})
+  const [matches, setMatches] = useState<Record<string, string>>(initialMatches ?? {})
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
-  const [submitted, setSubmitted] = useState(false)
-
-  useEffect(() => {
-    setVideoOrder(shuffle(items))
-    setPictureOrder(shuffle(items))
-    setMatches({})
-    setSelectedVideo(null)
-    setSubmitted(false)
-  }, [items])
+  // Practice-mode reveal lock only — quiz mode never locks (always editable, never reveals).
+  const [locked, setLocked] = useState(mode === 'activity' && !!initialMatches)
+  // Quiz-only "pressed" feedback — true right after Save, pops back up once a match changes again.
+  const [saved, setSaved] = useState(mode === 'quiz' && !!initialMatches)
 
   function handleVideoTap(id: string) {
-    if (submitted) return
+    if (locked) return
     setSelectedVideo((prev) => (prev === id ? null : id))
   }
 
   function handlePictureTap(pictureId: string) {
-    if (!selectedVideo || submitted) return
+    if (!selectedVideo || locked) return
 
     // If this picture is already matched to something else, swap it out
     const existingVideoForPicture = Object.entries(matches).find(([, pId]) => pId === pictureId)?.[0]
@@ -49,22 +61,34 @@ export default function DragDropMatch({ items, mode, onNext }: Props) {
       return next
     })
     setSelectedVideo(null)
+    setSaved(false)
   }
 
   const allMatched = Object.keys(matches).length === items.length
 
   function handleSubmit() {
     if (!allMatched) return
-    const finalScore = items.filter((item) => matches[item.id] === item.id).length
+    const results: MatchResult[] = items.map((item) => ({
+      itemId: item.id,
+      correct: matches[item.id] === item.id,
+      matchedLabel: matches[item.id] ?? '',
+    }))
     if (mode === 'quiz') {
-      onNext(finalScore === items.length, `${finalScore}/${items.length} matched`)
+      onAnswer(results)
+      setSaved(true)
     } else {
-      setSubmitted(true)
+      setLocked(true)
+      onAnswer(results)
     }
   }
 
-  const allCorrect = submitted && items.every((item) => matches[item.id] === item.id)
-  const score = submitted ? items.filter((item) => matches[item.id] === item.id).length : 0
+  const allCorrect = locked && items.every((item) => matches[item.id] === item.id)
+  const score = locked ? items.filter((item) => matches[item.id] === item.id).length : 0
+
+  function pairColor(itemId: string) {
+    const idx = items.findIndex((i) => i.id === itemId)
+    return PAIR_COLORS[idx % PAIR_COLORS.length]
+  }
 
   return (
     <div className="flex flex-col gap-4 lg:w-3/4 lg:mx-auto">
@@ -85,17 +109,20 @@ export default function DragDropMatch({ items, mode, onNext }: Props) {
             const isSelected = selectedVideo === item.id
             const matchedPictureId = matches[item.id]
             const matchedItem = matchedPictureId ? items.find((i) => i.id === matchedPictureId) : null
-            const isCorrect = submitted && matchedPictureId === item.id
+            const isCorrect = locked && matchedPictureId === item.id
+            const color = pairColor(item.id)
 
             return (
               <button
                 key={item.id}
                 onClick={() => handleVideoTap(item.id)}
                 className={cn(
-                  'relative w-full rounded-xl overflow-hidden transition-all active:scale-95',
-                  isSelected ? 'border-indigo-500 ring-3 ring-[#EAB865]' : '',
-                  submitted && isCorrect && 'border-emerald-500 bg-emerald-50',
-                  submitted && !isCorrect && 'border-red-500 bg-red-50',
+                  'relative w-full rounded-xl overflow-hidden border-3 transition-all active:scale-95',
+                  isSelected && 'border-slate-400 ring-3 ring-slate-300',
+                  !isSelected && matchedItem && !locked && color.border,
+                  !isSelected && !(matchedItem && !locked) && !locked && 'border-transparent',
+                  locked && isCorrect && 'border-emerald-500 bg-emerald-50',
+                  locked && !isCorrect && 'border-red-500 bg-red-50',
                 )}
               >
                 <video
@@ -106,12 +133,12 @@ export default function DragDropMatch({ items, mode, onNext }: Props) {
                   muted
                   className="aspect-video w-full object-contain bg-black"
                 />
-                {matchedItem && !submitted && (
-                  <div className="bg-[#D5ECEF] px-2 py-1 text-center text-xs font-semibold text-[#007B89]">
+                {matchedItem && !locked && (
+                  <div className={cn('px-2 py-1 text-center text-xs font-semibold', color.bg, color.text)}>
                     → {matchedItem.label}
                   </div>
                 )}
-                {submitted && (
+                {locked && (
                   <div className={cn('absolute right-1 top-1', isCorrect ? 'text-[#579F10]' : 'text-[#C61518]')}>
                     {isCorrect ? <CheckCircle2 className="h-10 w-10" /> : <XCircle className="h-10 w-10" />}
                   </div>
@@ -125,20 +152,22 @@ export default function DragDropMatch({ items, mode, onNext }: Props) {
         <div className="space-y-2">
           <p className="text-lg font-semibold text-center text-muted-foreground uppercase">Pictures</p>
           {pictureOrder.map((item) => {
-            const isMatched = Object.values(matches).includes(item.id)
-            const matchedCorrectly = submitted && matches[item.id] === item.id
+            const matchedVideoId = Object.entries(matches).find(([, pId]) => pId === item.id)?.[0]
+            const isMatched = matchedVideoId !== undefined
+            const matchedCorrectly = locked && matches[item.id] === item.id
+            const color = matchedVideoId ? pairColor(matchedVideoId) : null
 
             return (
               <button
                 key={item.id}
                 onClick={() => handlePictureTap(item.id)}
-                disabled={submitted}
+                disabled={locked}
                 className={cn(
                   'relative aspect-video flex w-full flex-col items-center justify-center rounded-xl border-3 p-2 transition-all active:scale-95',
                   selectedVideo && !isMatched ? 'border-[#D9BA87] bg-[#ECE7DF]' : 'border-[#DAD2C5] bg-white',
-                  isMatched && !submitted && 'border-[#8DC8CF] bg-[#D5ECEF] opacity-70',
-                  submitted && matchedCorrectly && 'border-[#579F10] bg-[#D8F2BF]',
-                  submitted && !matchedCorrectly && isMatched && 'border-[#C61518] bg-[#FFDEDF]',
+                  isMatched && !locked && color && cn(color.border, color.bg),
+                  locked && matchedCorrectly && 'border-[#579F10] bg-[#D8F2BF]',
+                  locked && !matchedCorrectly && isMatched && 'border-[#C61518] bg-[#FFDEDF]',
                 )}
               >
                 {item.imagePath ? (
@@ -163,29 +192,28 @@ export default function DragDropMatch({ items, mode, onNext }: Props) {
         </div>
       </div>
 
-      {!submitted ? (
+      {locked && (
+        <div className={cn(
+          'rounded-2xl p-4 text-center',
+          allCorrect ? 'bg-[#D8F2BF] text-[#579F10] ' : 'bg-[#FFECB7] text-[#FFA93C]',
+        )}>
+          <p className="font-bold text-lg">{allCorrect ? '🎉 Perfect match!' : `${score}/3 correct`}</p>
+        </div>
+      )}
+
+      {(mode === 'quiz' || !locked) && (
         <Button
           onClick={handleSubmit}
           disabled={!allMatched}
-          className="w-full py-6 text-base font-semibold bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] hover:bg-[#00B7CB] disabled:opacity-40"
+          className={cn(
+            'w-full py-6 text-base font-semibold transition-all disabled:opacity-40',
+            mode === 'quiz' && saved
+              ? 'bg-[#0BC2D7] shadow-none translate-y-1 opacity-90'
+              : 'bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] hover:bg-[#00B7CB]',
+          )}
         >
-          Check answers
+          {mode === 'quiz' ? (saved ? 'Saved ✓' : 'Save Answer') : 'Check answers'}
         </Button>
-      ) : (
-        <>
-          <div className={cn(
-            'rounded-2xl p-4 text-center',
-            allCorrect ? 'bg-[#D8F2BF] text-[#579F10] ' : 'bg-[#FFECB7] text-[#FFA93C]',
-          )}>
-            <p className="font-bold text-lg">{allCorrect ? '🎉 Perfect match!' : `${score}/3 correct`}</p>
-          </div>
-          <Button
-            onClick={() => onNext(allCorrect)}
-            className={cn('w-full py-6 text-base font-semibold', allCorrect ? 'bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] hover:bg-[#00B7CB]' : 'bg-[#FCCF52] shadow-[0_4px_0_#D0A530] hover:bg-[#FFC31B]')}
-          >
-            Continue →
-          </Button>
-        </>
       )}
     </div>
   )

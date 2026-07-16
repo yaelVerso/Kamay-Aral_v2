@@ -17,7 +17,7 @@ export default function AttemptReview({ answers, items }: { answers: AnswerRow[]
   const itemById = new Map(items.map((i) => [i.id, i]))
 
   function answerLabel(a: AnswerRow) {
-    if (a.activity_type === 'sign-to-picture') {
+    if (a.activity_type === 'sign-to-picture' || a.activity_type === 'drag-drop-match') {
       return itemById.get(a.answer_given ?? '')?.label ?? a.answer_given
     }
     return a.answer_given
@@ -50,9 +50,7 @@ export default function AttemptReview({ answers, items }: { answers: AnswerRow[]
                     <p className="font-medium">{item?.label ?? a.item_id}</p>
                     {!a.is_correct && (
                       <p className="text-muted-foreground">
-                        {a.activity_type === 'drag-drop-match'
-                          ? answerLabel(a)
-                          : <>Answered: <strong>{answerLabel(a) || '—'}</strong></>}
+                        Answered: <strong>{answerLabel(a) || '—'}</strong>
                       </p>
                     )}
                   </div>

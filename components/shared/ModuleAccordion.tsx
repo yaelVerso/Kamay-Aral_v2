@@ -8,6 +8,7 @@ interface ModuleSection {
   id: string
   title: string
   icon: string
+  badge?: ReactNode
   content: ReactNode
 }
 
@@ -27,7 +28,10 @@ export default function ModuleAccordion({ sections }: { sections: ModuleSection[
               <span className="flex items-center gap-2 font-semibold text-sm">
                 <span className="text-lg">{s.icon}</span> {s.title}
               </span>
-              <ChevronDown className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', open && 'rotate-180')} />
+              <span className="flex items-center gap-2 shrink-0">
+                {s.badge}
+                <ChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', open && 'rotate-180')} />
+              </span>
             </button>
             {open && <div className="border-t px-4 py-3 space-y-2">{s.content}</div>}
           </div>

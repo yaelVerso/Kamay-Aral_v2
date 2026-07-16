@@ -2,14 +2,12 @@
 
 import type { SignItem } from '@/content/types'
 import Image from 'next/image'
-import { Button } from '@/components/ui/button'
 
 interface Props {
   item: SignItem
-  onNext: () => void
 }
 
-export default function LessonCard({ item, onNext }: Props) {
+export default function LessonCard({ item }: Props) {
   return (
     <div className="flex flex-col gap-4 lg:w-3/4 lg:mx-auto">
       <p className="text-center text-xl font-semibold uppercase tracking-widest text-muted-foreground">
@@ -37,13 +35,6 @@ export default function LessonCard({ item, onNext }: Props) {
           </div>
         )}
       </div>
-
-      <Button
-        onClick={onNext}
-        className="w-full bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] hover:bg-[#00B7CB] py-6 text-lg font-semibold"
-      >
-        Got it →
-      </Button>
     </div>
   )
 }
