@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm'
+import FontSizeControl from '@/components/shared/FontSizeControl'
 
 export default async function AdminSettingsPage() {
   const supabase = await createClient()
@@ -29,6 +30,15 @@ export default async function AdminSettingsPage() {
         </CardHeader>
         <CardContent>
           <ChangePasswordForm />
+        </CardContent>
+      </Card>
+
+      <Card className="max-w-md">
+        <CardHeader>
+          <CardTitle className="text-base">Personalization</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <FontSizeControl />
         </CardContent>
       </Card>
     </div>

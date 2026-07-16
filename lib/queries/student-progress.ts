@@ -18,7 +18,7 @@ export async function getStudentProgress(supabase: SupabaseServerClient, student
   const { data: answers } = attemptIds.length > 0
     ? await supabase
         .from('quiz_answers')
-        .select('attempt_id, item_id, is_correct')
+        .select('attempt_id, item_id, activity_type, answer_given, is_correct')
         .in('attempt_id', attemptIds)
     : { data: [] }
 

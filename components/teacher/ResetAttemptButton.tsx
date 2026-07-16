@@ -25,6 +25,11 @@ export default function ResetAttemptButton({ attemptId, studentName, submoduleTi
     setLoading(true)
     try {
       const supabase = createClient()
+      // Explicit delete instead of relying solely on the DB's ON DELETE
+      // CASCADE — guarantees no stale answers linger even if that
+      // constraint isn't actually applied on the live database.
+      const { error: answersError } = await supabase.from('quiz_answers').delete().eq('attempt_id', attemptId)
+      if (answersError) throw answersError
       const { error } = await supabase.from('quiz_attempts').delete().eq('id', attemptId)
       if (error) throw error
       await recordAuditLog({

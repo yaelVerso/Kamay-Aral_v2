@@ -5,6 +5,7 @@ import QuizToggle from '@/components/teacher/QuizToggle'
 import CreateStudentDialog from '@/components/shared/CreateStudentDialog'
 import AddExistingStudentDialog from '@/components/shared/AddExistingStudentDialog'
 import RemoveFromSectionButton from '@/components/shared/RemoveFromSectionButton'
+import ModuleAccordion from '@/components/shared/ModuleAccordion'
 
 interface StudentRow {
   id: string
@@ -65,25 +66,29 @@ export default function SectionDetailView({ sectionId, sectionName, students, is
       <div>
         <h2 className="font-semibold mb-1">Quiz Settings</h2>
         <p className="text-sm text-muted-foreground mb-3">Enable quizzes per sub-module for this section.</p>
-        <div className="space-y-2">
-          {MODULES.flatMap((mod) =>
-            mod.subModules.map((sm) => (
-              <div key={sm.id} className="flex items-center justify-between rounded-xl border bg-white px-4 py-3 shadow-sm">
-                <div>
-                  <p className="font-medium text-sm">{mod.title}</p>
-                  <p className="text-xs text-muted-foreground">{sm.title}</p>
-                </div>
-                <QuizToggle
-                  sectionId={sectionId}
-                  sectionName={sectionName}
-                  submoduleId={sm.id}
-                  submoduleTitle={sm.title}
-                  initialEnabled={isEnabled(sm.id)}
-                />
-              </div>
-            ))
-          )}
-        </div>
+        <ModuleAccordion
+          sections={MODULES.filter((mod) => mod.subModules.length > 0).map((mod) => ({
+            id: mod.id,
+            title: mod.title,
+            icon: mod.icon,
+            content: (
+              <>
+                {mod.subModules.map((sm) => (
+                  <div key={sm.id} className="flex items-center justify-between rounded-xl border bg-white px-4 py-3 shadow-sm">
+                    <p className="font-medium text-sm">{sm.title}</p>
+                    <QuizToggle
+                      sectionId={sectionId}
+                      sectionName={sectionName}
+                      submoduleId={sm.id}
+                      submoduleTitle={sm.title}
+                      initialEnabled={isEnabled(sm.id)}
+                    />
+                  </div>
+                ))}
+              </>
+            ),
+          }))}
+        />
       </div>
     </>
   )

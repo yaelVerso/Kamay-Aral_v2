@@ -6,8 +6,9 @@ import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, GraduationCap, Users, ScrollText, Settings, LogOut, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
 import { recordAuditLog } from '@/app/actions/audit'
+
+const navItemClass = 'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors'
 
 const links = [
   { href: '/admin/overview', label: 'Overview', icon: LayoutDashboard },
@@ -42,7 +43,7 @@ export default function AdminSidebar() {
               href={href}
               onClick={() => setOpen(false)}
               className={cn(
-                'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                navItemClass,
                 active
                   ? 'bg-indigo-50 text-indigo-600'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -59,7 +60,7 @@ export default function AdminSidebar() {
           href="/admin/settings"
           onClick={() => setOpen(false)}
           className={cn(
-            'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+            navItemClass,
             pathname.startsWith('/admin/settings')
               ? 'bg-indigo-50 text-indigo-600'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -68,10 +69,10 @@ export default function AdminSidebar() {
           <Settings className="h-4 w-4" />
           Settings
         </Link>
-        <Button variant="ghost" size="sm" onClick={handleLogout} className="w-full justify-start gap-1.5 text-muted-foreground">
+        <button onClick={handleLogout} className={cn(navItemClass, 'text-muted-foreground hover:bg-muted hover:text-foreground')}>
           <LogOut className="h-4 w-4" />
           Sign out
-        </Button>
+        </button>
       </div>
     </>
   )

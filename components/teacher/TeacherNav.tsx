@@ -6,8 +6,9 @@ import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, Users, Settings, LogOut, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
 import { recordAuditLog } from '@/app/actions/audit'
+
+const navItemClass = 'flex items-center gap-2 rounded-md px-6 py-3 text-sm font-medium transition-colors'
 
 const links = [
   { href: '/teacher/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -40,7 +41,7 @@ export default function TeacherNav() {
               href={href}
               onClick={() => setOpen(false)}
               className={cn(
-                'flex items-center gap-2 rounded-md px-6 py-3 text-sm font-medium transition-colors',
+                navItemClass,
                 active
                   ? 'bg-[#ffffff75] text-white'
                   : 'text-white hover:bg-[#ffffff25]',
@@ -57,7 +58,7 @@ export default function TeacherNav() {
           href="/teacher/settings"
           onClick={() => setOpen(false)}
           className={cn(
-            'flex items-center gap-2 rounded-md px-6 py-3 text-sm font-medium transition-colors',
+            navItemClass,
             pathname.startsWith('/teacher/settings')
               ? 'bg-[#ffffff75] text-white'
               : 'text-white hover:bg-[#ffffff25]',
@@ -66,10 +67,10 @@ export default function TeacherNav() {
           <Settings className="h-4 w-4" />
           Settings
         </Link>
-        <Button variant="ghost" size="lg" onClick={handleLogout} className="w-full justify-start gap-1.5 text-white">
-          <LogOut className="h-5 w-5" />
+        <button onClick={handleLogout} className={cn(navItemClass, 'text-white hover:bg-[#ffffff25]')}>
+          <LogOut className="h-4 w-4" />
           Sign out
-        </Button>
+        </button>
       </div>
     </>
   )

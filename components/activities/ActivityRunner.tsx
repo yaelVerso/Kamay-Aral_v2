@@ -38,42 +38,20 @@ interface Props {
 }
 
 /**
- * Groups items into drag-drop triplets from a shuffled order. Final group
- * is padded (with the first item) if exactly 2 remain, skipped if 1 remains
- * (not enough for a meaningful match).
- */
-function buildDragDropGroups(items: SignItem[]): SignItem[][] {
-  const ordered = shuffle(items)
-  const groups: SignItem[][] = []
-  let i = 0
-  for (; i + 3 <= ordered.length; i += 3) {
-    groups.push(ordered.slice(i, i + 3))
-  }
-  const remaining = ordered.length - i
-  if (remaining === 2) {
-    groups.push([...ordered.slice(i), ordered[0]])
-  }
-  return groups
-}
-
-/**
- * Builds the activity step sequence interleaved per item:
+ * Builds the activity/practice step sequence interleaved per item:
  *   Lesson Card A → Sign to Picture A → Spelling A
- *   Lesson Card B → Sign to Picture B → Spelling B
- *   Lesson Card C → Sign to Picture C → Spelling C
- *   Drag & Drop [A, B, C]   ← review every 3 items
- *   Lesson Card D → ...
+ *   Lesson Card B → Sign to Picture B → Spelling B → ...
+ *
+ * Drag & Drop Match is deliberately excluded here — matching-type
+ * questions only appear in Quiz mode, never in practice.
  */
 function buildActivitySteps(submodule: SubModule): ActivityStep[] {
   const items = submodule.items
-  const hasDragDrop = submodule.activitySequence.includes('drag-drop-match')
   const perItemTypes = submodule.activitySequence.filter((t) => t !== 'drag-drop-match')
 
   const steps: ActivityStep[] = []
 
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i]
-
+  for (const item of items) {
     for (const type of perItemTypes) {
       if (type === 'lesson-card') {
         steps.push({ type, item })
@@ -84,53 +62,69 @@ function buildActivitySteps(submodule: SubModule): ActivityStep[] {
         steps.push({ type, item })
       }
     }
-
-    if (hasDragDrop) {
-      const posInGroup = (i + 1) % 3
-      const isGroupComplete = posInGroup === 0
-      const isLastItem = i === items.length - 1
-
-      if (isGroupComplete) {
-        const group = items.slice(i - 2, i + 1)
-        steps.push({ type: 'drag-drop-match', item: group[0], groupItems: group })
-      } else if (isLastItem && posInGroup >= 2) {
-        const group = items.slice(i - (posInGroup - 1), i + 1)
-        while (group.length < 3) group.push(items[0])
-        steps.push({ type: 'drag-drop-match', item: group[0], groupItems: group.slice(0, 3) })
-      }
-    }
   }
 
   return steps
 }
 
+const QUIZ_SIGN_TO_PICTURE_COUNT = 4
+const QUIZ_SPELLING_COUNT = 4
+const QUIZ_DRAG_DROP_GROUP_COUNT = 2
+
 /**
- * Builds the quiz step sequence grouped by activity type — all Sign to
- * Picture questions, then all Spelling questions, then all Drag & Drop
- * matches — each section independently shuffled. Grouping by type (instead
- * of interleaving per item) prevents a question in one type from giving
- * away the answer to the very next question about the same item.
+ * Picks `count` items from `pool`, guaranteeing every item appears at
+ * least once before any repeats when `count >= pool.length` (draws full
+ * shuffled cycles back-to-back). This is what makes a small submodule's
+ * items all show up across a quiz instead of random chance leaving some
+ * out — two independent 4-item draws from a 7-item pool would only cover
+ * ~6 of the 7 on average.
+ */
+function pickItemsCoveringAll(pool: SignItem[], count: number): SignItem[] {
+  if (pool.length === 0) return []
+  const result: SignItem[] = []
+  while (result.length < count) {
+    const shuffled = shuffle(pool)
+    result.push(...shuffled.slice(0, count - result.length))
+  }
+  return result
+}
+
+/**
+ * Builds a fixed-length 10-question quiz, grouped by type — 4 Sign to
+ * Picture, then 4 Spelling, then 2 Drag & Drop Match groups — each section
+ * independently shuffled. Grouping by type (instead of interleaving per
+ * item) prevents a question in one type from giving away the answer to
+ * the very next question about the same item.
+ *
+ * Sign to Picture and Spelling share one coverage-guaranteeing draw (8
+ * items total) rather than two independent 4-item draws, so a submodule
+ * with 8 or fewer items has every one of them appear somewhere in the
+ * quiz instead of a random subset.
  */
 function buildQuizSteps(submodule: SubModule): ActivityStep[] {
-  const perItemTypes = submodule.activitySequence.filter((t) => t !== 'drag-drop-match' && t !== 'lesson-card')
   const hasDragDrop = submodule.activitySequence.includes('drag-drop-match')
-
   const steps: ActivityStep[] = []
 
-  for (const type of perItemTypes) {
-    const ordered = shuffle(submodule.items)
-    for (const item of ordered) {
-      if (type === 'sign-to-picture') {
-        const distractors = shuffle(submodule.items.filter((it) => it.id !== item.id))
-        steps.push({ type, item, distractors })
-      } else if (type === 'spelling') {
-        steps.push({ type, item })
-      }
-    }
+  const identificationPool = pickItemsCoveringAll(
+    submodule.items,
+    QUIZ_SIGN_TO_PICTURE_COUNT + QUIZ_SPELLING_COUNT,
+  )
+  const signToPictureItems = identificationPool.slice(0, QUIZ_SIGN_TO_PICTURE_COUNT)
+  const spellingItems = identificationPool.slice(QUIZ_SIGN_TO_PICTURE_COUNT)
+
+  for (const item of signToPictureItems) {
+    const distractors = shuffle(submodule.items.filter((it) => it.id !== item.id))
+    steps.push({ type: 'sign-to-picture', item, distractors })
   }
 
-  if (hasDragDrop) {
-    for (const group of buildDragDropGroups(submodule.items)) {
+  for (const item of spellingItems) {
+    steps.push({ type: 'spelling', item })
+  }
+
+  if (hasDragDrop && submodule.items.length >= 3) {
+    const dragDropPool = pickItemsCoveringAll(submodule.items, QUIZ_DRAG_DROP_GROUP_COUNT * 3)
+    for (let g = 0; g < QUIZ_DRAG_DROP_GROUP_COUNT; g++) {
+      const group = dragDropPool.slice(g * 3, g * 3 + 3)
       steps.push({ type: 'drag-drop-match', item: group[0], groupItems: group })
     }
   }

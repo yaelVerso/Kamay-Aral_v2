@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import LogoutButton from '@/components/shared/LogoutButton'
-import FontSizeControl from '@/components/student/FontSizeControl'
+import FontSizeControl from '@/components/shared/FontSizeControl'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
