@@ -85,33 +85,32 @@ function stepPoints(step: ActivityStep): number {
 }
 
 /**
- * Picks `count` items from `pool`, guaranteeing every item appears at
- * least once before any repeats when `count >= pool.length` (draws full
- * shuffled cycles back-to-back). This is what makes a small submodule's
- * items all show up across a quiz instead of random chance leaving some
- * out — two independent draws from the same pool would only cover a
- * subset on average.
+ * Deterministically picks `count` items from `pool` by cycling through it
+ * in its authored (content-file) order — every item appears at least once
+ * before any repeats when `count >= pool.length`. Unlike a random draw,
+ * this returns the SAME set of items every time it's called for a given
+ * submodule, which is what makes item selection identical across every
+ * student's quiz attempt (so a teacher's Item Analysis is comparing the
+ * same questions section-wide, not different random subsets per student).
+ * Presentation order is randomized separately, after this fixed selection.
  */
 function pickItemsCoveringAll(pool: SignItem[], count: number): SignItem[] {
   if (pool.length === 0) return []
-  const result: SignItem[] = []
-  while (result.length < count) {
-    const shuffled = shuffle(pool)
-    result.push(...shuffled.slice(0, count - result.length))
-  }
-  return result
+  return Array.from({ length: count }, (_, i) => pool[i % pool.length])
 }
 
 /**
  * Builds a fixed-length quiz, grouped by type — 5 Sign to Picture, then
- * 4 Spelling, then 2 Drag & Drop Match groups — each section independently
- * shuffled. Grouping by type (instead of interleaving per item) prevents
- * a question in one type from giving away the answer to the very next
- * question about the same item.
+ * 4 Spelling, then 2 Drag & Drop Match groups. WHICH items appear, which
+ * type each is tested with, and which items are grouped for matching are
+ * all fixed (same for every student on this submodule) via
+ * `pickItemsCoveringAll`. Only presentation is randomized per attempt:
+ * the order of questions within each block, multiple-choice distractors,
+ * and each matching group's on-screen video/picture layout.
  *
- * Sign to Picture and Spelling share one coverage-guaranteeing draw (9
- * items total) rather than two independent draws, so a submodule with 9
- * or fewer items has every one of them appear somewhere in the quiz.
+ * Sign to Picture and Spelling share one fixed selection (9 items total)
+ * rather than two independent picks, so a submodule with 9 or fewer items
+ * has every one of them appear somewhere in the quiz.
  */
 function buildQuizSteps(submodule: SubModule): ActivityStep[] {
   const hasDragDrop = submodule.activitySequence.includes('drag-drop-match')
@@ -121,8 +120,8 @@ function buildQuizSteps(submodule: SubModule): ActivityStep[] {
     submodule.items,
     QUIZ_SIGN_TO_PICTURE_COUNT + QUIZ_SPELLING_COUNT,
   )
-  const signToPictureItems = identificationPool.slice(0, QUIZ_SIGN_TO_PICTURE_COUNT)
-  const spellingItems = identificationPool.slice(QUIZ_SIGN_TO_PICTURE_COUNT)
+  const signToPictureItems = shuffle(identificationPool.slice(0, QUIZ_SIGN_TO_PICTURE_COUNT))
+  const spellingItems = shuffle(identificationPool.slice(QUIZ_SIGN_TO_PICTURE_COUNT))
 
   for (const item of signToPictureItems) {
     const distractors = shuffle(submodule.items.filter((it) => it.id !== item.id))
