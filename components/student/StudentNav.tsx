@@ -14,7 +14,7 @@ const links = [
 export default function StudentNav() {
   const pathname = usePathname()
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 shadow-[0_0_5px_#d4d4d4] bg-[#faf8f4]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 shadow-[0_0_5px_#d4d4d4] bg-background">
       <div className="mx-auto flex max-w-md items-center justify-around">
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))

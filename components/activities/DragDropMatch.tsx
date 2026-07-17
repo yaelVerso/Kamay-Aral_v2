@@ -164,7 +164,7 @@ export default function DragDropMatch({ items, mode, initialMatches, onAnswer }:
                 disabled={locked}
                 className={cn(
                   'relative aspect-video flex w-full flex-col items-center justify-center rounded-xl border-3 p-2 transition-all active:scale-95',
-                  selectedVideo && !isMatched ? 'border-[#D9BA87] bg-[#ECE7DF]' : 'border-[#DAD2C5] bg-white',
+                  selectedVideo && !isMatched ? 'border-[#D9BA87] bg-[#ECE7DF]' : 'border-[#DAD2C5] bg-card',
                   isMatched && !locked && color && cn(color.border, color.bg),
                   locked && matchedCorrectly && 'border-[#579F10] bg-[#D8F2BF]',
                   locked && !matchedCorrectly && isMatched && 'border-[#C61518] bg-[#FFDEDF]',

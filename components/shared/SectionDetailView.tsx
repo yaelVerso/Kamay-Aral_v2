@@ -50,7 +50,7 @@ export default function SectionDetailView({ sectionId, sectionName, students, at
           {students.map((student) => (
             <div
               key={student.id}
-              className="flex items-center justify-between rounded-xl border bg-white p-3 shadow-sm"
+              className="flex items-center justify-between rounded-xl border bg-card p-3 shadow-sm"
             >
               <Link href={studentHref(student.id)} className="flex items-center gap-3 flex-1">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-600">
@@ -87,7 +87,7 @@ export default function SectionDetailView({ sectionId, sectionName, students, at
             content: (
               <>
                 {mod.subModules.map((sm) => (
-                  <div key={sm.id} className="flex items-center justify-between rounded-xl border bg-white px-4 py-3 shadow-sm">
+                  <div key={sm.id} className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm">
                     <p className="font-medium text-sm">{sm.title}</p>
                     <QuizToggle
                       sectionId={sectionId}

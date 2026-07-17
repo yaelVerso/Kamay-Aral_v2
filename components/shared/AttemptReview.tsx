@@ -39,7 +39,7 @@ export default function AttemptReview({ answers, items }: { answers: AnswerRow[]
           {answers.map((a, idx) => {
             const item = itemById.get(a.item_id)
             return (
-              <div key={idx} className="flex items-center justify-between gap-3 rounded-lg border bg-white px-3 py-2 text-xs">
+              <div key={idx} className="flex items-center justify-between gap-3 rounded-lg border bg-card px-3 py-2 text-xs">
                 <div className="flex items-center gap-2 min-w-0">
                   {a.is_correct ? (
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />

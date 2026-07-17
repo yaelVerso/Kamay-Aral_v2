@@ -134,7 +134,7 @@ export default function SectionPerformanceList({ students, attempts, enabledSubm
           <Link
             key={student.id}
             href={student.href}
-            className="flex items-center justify-between rounded-xl border bg-white p-3 shadow-sm hover:shadow-md transition-shadow"
+            className="flex items-center justify-between rounded-xl border bg-card p-3 shadow-sm hover:shadow-md transition-shadow"
           >
             <div className="flex items-center gap-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">

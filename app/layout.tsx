@@ -28,11 +28,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${nunito.variable} h-full`} suppressHydrationWarning>
       <head>
-        {/* Runs before hydration so a saved font-size preference applies
-            immediately instead of flashing at the default size first. */}
+        {/* Runs before hydration so saved font-size and theme preferences
+            apply immediately instead of flashing at the defaults first. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var f=localStorage.getItem('fontSize');if(f)document.documentElement.setAttribute('data-font-size',f);}catch(e){}`,
+            __html: `try{var f=localStorage.getItem('fontSize');if(f)document.documentElement.setAttribute('data-font-size',f);var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}`,
           }}
         />
       </head>

@@ -78,7 +78,7 @@ export default function StudentProgressView({ studentName, sectionId, sectionNam
                 : null
 
               return (
-                <div key={sm.id} className="rounded-xl border bg-white p-4 shadow-sm space-y-3">
+                <div key={sm.id} className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{sm.title}</p>

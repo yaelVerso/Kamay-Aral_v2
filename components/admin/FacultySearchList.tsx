@@ -66,7 +66,7 @@ export default function FacultySearchList({ teachers }: { teachers: Teacher[] })
           <Link
             key={teacher.id}
             href={`/admin/faculty/${teacher.id}`}
-            className="flex items-center justify-between rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
+            className="flex items-center justify-between rounded-xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">

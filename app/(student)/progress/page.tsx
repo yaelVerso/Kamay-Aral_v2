@@ -56,7 +56,7 @@ export default async function ProgressPage() {
           </h2>
           <div className="space-y-2">
             {attempts.map((a) => (
-              <div key={a.submodule_id} className="flex items-center justify-between rounded-xl border bg-white p-3 shadow-sm">
+              <div key={a.submodule_id} className="flex items-center justify-between rounded-xl border bg-card p-3 shadow-sm">
                 <p className="text-sm font-medium">{a.submodule_id}</p>
                 <span className="text-sm font-bold text-indigo-600">
                   {a.score}/{a.total}

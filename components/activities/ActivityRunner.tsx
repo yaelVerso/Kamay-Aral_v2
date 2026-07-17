@@ -249,7 +249,7 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
                 {answers.map((a, idx) => {
                   const item = itemById.get(a.item_id)
                   return (
-                    <div key={idx} className="flex items-center justify-between gap-3 rounded-xl border bg-white p-3 shadow-sm">
+                    <div key={idx} className="flex items-center justify-between gap-3 rounded-xl border bg-card p-3 shadow-sm">
                       <div className="flex items-center gap-2.5 min-w-0">
                         {a.is_correct ? (
                           <CheckCircle2 className="h-5 w-5 shrink-0 text-[#579F10]" />
@@ -359,7 +359,7 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
         <button
           onClick={goPrevious}
           disabled={stepIndex === 0}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white border border-[#DAD2C5] shadow-[0_4px_0_#DAD2C5] py-3 text-lg font-semibold disabled:opacity-40 hover:bg-muted transition-colors"
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-card border border-[#DAD2C5] shadow-[0_4px_0_#DAD2C5] py-3 text-lg font-semibold disabled:opacity-40 hover:bg-muted transition-colors"
         >
           <ChevronLeft className="h-6 w-6" />
           Previous

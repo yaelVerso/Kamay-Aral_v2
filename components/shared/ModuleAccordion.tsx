@@ -20,7 +20,7 @@ export default function ModuleAccordion({ sections }: { sections: ModuleSection[
       {sections.map((s) => {
         const open = openId === s.id
         return (
-          <div key={s.id} className="rounded-xl border bg-white shadow-sm overflow-hidden">
+          <div key={s.id} className="rounded-xl border bg-card shadow-sm overflow-hidden">
             <button
               onClick={() => setOpenId(open ? null : s.id)}
               className="flex w-full items-center justify-between px-4 py-3 text-left"

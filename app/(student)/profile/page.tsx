@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import LogoutButton from '@/components/shared/LogoutButton'
 import FontSizeControl from '@/components/shared/FontSizeControl'
+import ThemeToggle from '@/components/shared/ThemeToggle'
+import VideoPlaybackSettings from '@/components/shared/VideoPlaybackSettings'
+import { Separator } from '@/components/ui/separator'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -47,7 +50,7 @@ export default async function ProfilePage() {
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Class
         </h2>
-        <div className="rounded-xl border bg-white p-4 shadow-sm space-y-1">
+        <div className="rounded-xl border bg-card p-4 shadow-sm space-y-1">
           {sectionName ? (
             <>
               <p className="text-sm"><span className="text-muted-foreground">Section:</span> <span className="font-medium">{sectionName}</span></p>
@@ -63,8 +66,12 @@ export default async function ProfilePage() {
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Settings
         </h2>
-        <div className="rounded-xl border bg-white p-4 shadow-sm">
+        <div className="rounded-xl border bg-card p-4 shadow-sm space-y-5">
           <FontSizeControl />
+          <Separator />
+          <ThemeToggle />
+          <Separator />
+          <VideoPlaybackSettings />
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm'
 import FontSizeControl from '@/components/shared/FontSizeControl'
+import ThemeToggle from '@/components/shared/ThemeToggle'
 
 export default async function TeacherSettingsPage() {
   const supabase = await createClient()
@@ -43,8 +44,9 @@ export default async function TeacherSettingsPage() {
         <CardHeader>
           <CardTitle className="text-base">Personalization</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-5">
           <FontSizeControl />
+          <ThemeToggle />
         </CardContent>
       </Card>
     </div>

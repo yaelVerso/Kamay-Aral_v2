@@ -6,6 +6,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
+import {
+  readBooleanSetting,
+  VIDEO_AUTO_REPLAY_STORAGE_KEY,
+  VIDEO_MANUAL_PLAY_STORAGE_KEY,
+} from '@/lib/settings'
 
 interface Props {
   module: Module
@@ -14,6 +19,13 @@ interface Props {
 
 export default function LearnModeClient({ module: mod, submodule }: Props) {
   const [selectedItem, setSelectedItem] = useState<SignItem>(submodule.items[0])
+  const [autoReplay, setAutoReplay] = useState(false)
+  const [manualPlay, setManualPlay] = useState(true)
+
+  useEffect(() => {
+    setAutoReplay(readBooleanSetting(VIDEO_AUTO_REPLAY_STORAGE_KEY, false))
+    setManualPlay(readBooleanSetting(VIDEO_MANUAL_PLAY_STORAGE_KEY, true))
+  }, [])
 
   const markViewed = useCallback(async (item: SignItem) => {
     const supabase = createClient()
@@ -53,7 +65,7 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
   const itemButtonClass = (item: SignItem) =>
     `flex shrink-0 items-center justify-center whitespace-nowrap rounded-xl border-2 px-4 py-2.5 text-sm font-bold transition-all active:scale-95 lg:w-full lg:px-3 ${selectedItem.id === item.id
       ? 'border-[#007B89] bg-[#007B89] text-white'
-      : 'border-[#DAD2C5] bg-white text-foreground hover:border-[#0BC2D7]'
+      : 'border-[#DAD2C5] bg-card text-foreground hover:border-[#0BC2D7]'
     }`
 
   return (
@@ -100,6 +112,8 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
               key={selectedItem.videoPath}
               src={selectedItem.videoPath}
               controls
+              loop={autoReplay}
+              autoPlay={!manualPlay}
               playsInline
               preload="metadata"
               className="h-full w-full object-contain"
@@ -109,7 +123,7 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
           </div>
 
           {/* Label + image */}
-          <div className="flex flex-col items-center gap-3 rounded-2xl bg-white p-6 shadow-xs border-2 border-[#DAD2C5]">
+          <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-6 shadow-xs border-2 border-[#DAD2C5]">
             <span className="text-6xl font-black tracking-tight text-[#007B89]">{selectedItem.label}</span>
             {selectedItem.labelFil && (
               <span className="text-lg text-muted-foreground">{selectedItem.labelFil}</span>
@@ -131,7 +145,7 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
             <button
               onClick={prev}
               disabled={currentIndex === 0}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white border border-[#DAD2C5] shadow-[0_4px_0_#DAD2C5] py-3 text-lg font-semibold disabled:opacity-40 hover:bg-muted transition-colors"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-card border border-[#DAD2C5] shadow-[0_4px_0_#DAD2C5] py-3 text-lg font-semibold disabled:opacity-40 hover:bg-muted transition-colors"
             >
               <ChevronLeft className="h-6 w-6" />
               Previous

@@ -84,7 +84,7 @@ export default async function TeacherDashboardPage() {
         </Card>
       </div>
 
-      <div className="flex h-full flex-col rounded-xl border bg-white shadow-sm">
+      <div className="flex h-full flex-col rounded-xl border bg-card shadow-sm">
         <div className="flex items-center justify-between px-4 pt-4 pb-3">
           <h2 className="font-semibold">Your Sections</h2>
           <Link href="/teacher/sections" className="text-sm text-[#0BC2D7] font-semibold hover:underline">
@@ -97,7 +97,7 @@ export default async function TeacherDashboardPage() {
               <Link
                 key={section.id}
                 href={`/teacher/sections/${section.id}`}
-                className="flex items-center justify-between rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
+                className="flex items-center justify-between rounded-xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
@@ -126,7 +126,7 @@ export default async function TeacherDashboardPage() {
         <h2 className="font-semibold mb-3">Modules</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {MODULES.map((mod) => (
-            <div key={mod.id} className={`rounded-xl border bg-white p-3 shadow-sm ${mod.subModules.length === 0 ? 'opacity-50' : ''}`}>
+            <div key={mod.id} className={`rounded-xl border bg-card p-3 shadow-sm ${mod.subModules.length === 0 ? 'opacity-50' : ''}`}>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-2xl">{mod.icon}</span>
                 <p className="text-xs font-semibold leading-tight">{mod.title}</p>
