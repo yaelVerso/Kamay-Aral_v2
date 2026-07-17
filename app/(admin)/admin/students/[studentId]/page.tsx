@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { getStudentProgress } from '@/lib/queries/student-progress'
 import StudentProgressView from '@/components/shared/StudentProgressView'
-import DeleteAccountDialog from '@/components/admin/DeleteAccountDialog'
-import { deleteStudentAction } from '@/app/actions/admin'
+import AccountStatusToggle from '@/components/admin/AccountStatusToggle'
+import { deactivateStudentAction, reactivateStudentAction } from '@/app/actions/admin'
 import { Badge } from '@/components/ui/badge'
 
 interface Props { params: Promise<{ studentId: string }> }
@@ -16,7 +16,7 @@ export default async function AdminStudentProfilePage({ params }: Props) {
 
   const { data: student } = await supabase
     .from('students')
-    .select('id, full_name, section_id')
+    .select('id, full_name, section_id, is_active')
     .eq('id', studentId)
     .single()
   if (!student) notFound()
@@ -39,14 +39,18 @@ export default async function AdminStudentProfilePage({ params }: Props) {
             <Badge variant={section ? 'default' : 'secondary'}>
               {section?.name ?? 'Unassigned'}
             </Badge>
+            <Badge variant={student.is_active ? 'default' : 'secondary'}>
+              {student.is_active ? 'Active' : 'Deactivated'}
+            </Badge>
           </div>
         </div>
-        <DeleteAccountDialog
+        <AccountStatusToggle
           id={student.id}
           name={student.full_name}
+          isActive={student.is_active}
           entityLabel="student"
-          deleteAction={deleteStudentAction}
-          redirectTo="/admin/students"
+          deactivateAction={deactivateStudentAction}
+          reactivateAction={reactivateStudentAction}
         />
       </div>
 

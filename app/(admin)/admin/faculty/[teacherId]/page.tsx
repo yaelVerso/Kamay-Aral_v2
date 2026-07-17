@@ -3,8 +3,9 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, Users } from 'lucide-react'
 import CreateSectionForTeacherForm from '@/components/admin/CreateSectionForTeacherForm'
-import DeleteAccountDialog from '@/components/admin/DeleteAccountDialog'
-import { deleteTeacherAction } from '@/app/actions/admin'
+import AccountStatusToggle from '@/components/admin/AccountStatusToggle'
+import { deactivateTeacherAction, reactivateTeacherAction } from '@/app/actions/admin'
+import { Badge } from '@/components/ui/badge'
 
 interface Props { params: Promise<{ teacherId: string }> }
 
@@ -14,7 +15,7 @@ export default async function AdminTeacherProfilePage({ params }: Props) {
 
   const { data: teacher } = await supabase
     .from('teachers')
-    .select('id, full_name')
+    .select('id, full_name, is_active')
     .eq('id', teacherId)
     .single()
   if (!teacher) notFound()
@@ -41,14 +42,20 @@ export default async function AdminTeacherProfilePage({ params }: Props) {
           <Link href="/admin/faculty" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-2">
             <ChevronLeft className="h-4 w-4" /> Faculty
           </Link>
-          <h1 className="text-2xl font-bold">{teacher.full_name}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">{teacher.full_name}</h1>
+            <Badge variant={teacher.is_active ? 'default' : 'secondary'}>
+              {teacher.is_active ? 'Active' : 'Deactivated'}
+            </Badge>
+          </div>
         </div>
-        <DeleteAccountDialog
+        <AccountStatusToggle
           id={teacher.id}
           name={teacher.full_name}
+          isActive={teacher.is_active}
           entityLabel="teacher"
-          deleteAction={deleteTeacherAction}
-          redirectTo="/admin/faculty"
+          deactivateAction={deactivateTeacherAction}
+          reactivateAction={reactivateTeacherAction}
         />
       </div>
 

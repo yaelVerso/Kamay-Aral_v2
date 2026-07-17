@@ -32,7 +32,12 @@ export default function LoginPage() {
       const email = identifier.trim()
 
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) throw new Error('Incorrect email or password')
+      if (error) {
+        if (error.message.toLowerCase().includes('banned')) {
+          throw new Error('This account has been deactivated. Contact your admin.')
+        }
+        throw new Error('Incorrect email or password')
+      }
 
       // Awaited on purpose: firing this concurrently with the redirect races
       // the login's session-cookie write against this Server Action's own

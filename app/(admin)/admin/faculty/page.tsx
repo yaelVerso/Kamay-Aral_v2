@@ -6,13 +6,14 @@ export default async function AdminFacultyPage() {
   const supabase = await createClient()
 
   const [{ data: teachers }, { data: sections }] = await Promise.all([
-    supabase.from('teachers').select('id, full_name').order('full_name'),
+    supabase.from('teachers').select('id, full_name, is_active').order('full_name'),
     supabase.from('sections').select('teacher_id'),
   ])
 
   const teacherList = (teachers ?? []).map((t) => ({
     id: t.id,
     full_name: t.full_name,
+    isActive: t.is_active,
     sectionCount: sections?.filter((s) => s.teacher_id === t.id).length ?? 0,
   }))
 

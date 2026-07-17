@@ -57,6 +57,11 @@ create table public.teachers (
   full_name text not null,
   first_name text,
   last_name text,
+  -- Deactivation (not deletion) is the only way to remove access from the
+  -- app UI — see deactivateTeacherAction/reactivateTeacherAction, which also
+  -- ban/unban the auth.users row so a deactivated account can't sign in at
+  -- all. This column is just for display/filtering; the ban is the real gate.
+  is_active boolean not null default true,
   created_at timestamptz not null default now()
 );
 alter table public.teachers enable row level security;
@@ -110,6 +115,11 @@ create table public.students (
   first_name text,
   last_name text,
   email text,
+  -- Deactivation (not deletion) is the only way to remove access from the
+  -- app UI — see deactivateStudentAction/reactivateStudentAction, which also
+  -- ban/unban the auth.users row so a deactivated account can't sign in at
+  -- all. This column is just for display/filtering; the ban is the real gate.
+  is_active boolean not null default true,
   created_at timestamptz not null default now()
 );
 alter table public.students enable row level security;

@@ -133,28 +133,64 @@ export async function createStudentAction(payload: {
   })
 }
 
-export async function deleteTeacherAction(teacherId: string) {
+// Accounts are never deleted from the app — only deactivated (banned from
+// signing in) or reactivated. Permanent deletion, if ever needed, is a
+// manual operation done directly in Supabase.
+
+export async function deactivateTeacherAction(teacherId: string) {
   await requireAdmin()
   const admin = createAdminClient()
 
   const { data: teacher } = await admin.from('teachers').select('full_name').eq('id', teacherId).single()
 
-  const { error } = await admin.auth.admin.deleteUser(teacherId)
+  const { error: banError } = await admin.auth.admin.updateUserById(teacherId, { ban_duration: '87600h' })
+  if (banError) throw new Error(banError.message)
+  const { error } = await admin.from('teachers').update({ is_active: false }).eq('id', teacherId)
   if (error) throw new Error(error.message)
 
-  await recordAuditLog({ action: 'teacher.delete', description: `deleted teacher account for ${teacher?.full_name ?? 'a teacher'}` })
+  await recordAuditLog({ action: 'teacher.deactivate', description: `deactivated teacher account for ${teacher?.full_name ?? 'a teacher'}` })
 }
 
-export async function deleteStudentAction(studentId: string) {
+export async function reactivateTeacherAction(teacherId: string) {
+  await requireAdmin()
+  const admin = createAdminClient()
+
+  const { data: teacher } = await admin.from('teachers').select('full_name').eq('id', teacherId).single()
+
+  const { error: banError } = await admin.auth.admin.updateUserById(teacherId, { ban_duration: 'none' })
+  if (banError) throw new Error(banError.message)
+  const { error } = await admin.from('teachers').update({ is_active: true }).eq('id', teacherId)
+  if (error) throw new Error(error.message)
+
+  await recordAuditLog({ action: 'teacher.reactivate', description: `reactivated teacher account for ${teacher?.full_name ?? 'a teacher'}` })
+}
+
+export async function deactivateStudentAction(studentId: string) {
   await requireAdmin()
   const admin = createAdminClient()
 
   const { data: student } = await admin.from('students').select('full_name').eq('id', studentId).single()
 
-  const { error } = await admin.auth.admin.deleteUser(studentId)
+  const { error: banError } = await admin.auth.admin.updateUserById(studentId, { ban_duration: '87600h' })
+  if (banError) throw new Error(banError.message)
+  const { error } = await admin.from('students').update({ is_active: false }).eq('id', studentId)
   if (error) throw new Error(error.message)
 
-  await recordAuditLog({ action: 'student.delete', description: `deleted student account for ${student?.full_name ?? 'a student'}` })
+  await recordAuditLog({ action: 'student.deactivate', description: `deactivated student account for ${student?.full_name ?? 'a student'}` })
+}
+
+export async function reactivateStudentAction(studentId: string) {
+  await requireAdmin()
+  const admin = createAdminClient()
+
+  const { data: student } = await admin.from('students').select('full_name').eq('id', studentId).single()
+
+  const { error: banError } = await admin.auth.admin.updateUserById(studentId, { ban_duration: 'none' })
+  if (banError) throw new Error(banError.message)
+  const { error } = await admin.from('students').update({ is_active: true }).eq('id', studentId)
+  if (error) throw new Error(error.message)
+
+  await recordAuditLog({ action: 'student.reactivate', description: `reactivated student account for ${student?.full_name ?? 'a student'}` })
 }
 
 export async function createSectionForTeacherAction(payload: { teacherId: string; name: string }) {
