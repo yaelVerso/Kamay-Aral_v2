@@ -171,21 +171,23 @@ export default function DragDropMatch({ items, mode, initialMatches, onAnswer }:
                 )}
               >
                 {item.imagePath ? (
-                  <div className="relative min-h-0 w-full flex-1">
-                    <Image
-                      src={item.imagePath}
-                      alt={item.label}
-                      fill
-                      sizes="(max-width: 1023px) 50vw, 25vw"
-                      className="object-contain"
-                    />
-                  </div>
+                  <>
+                    <div className="relative min-h-0 w-full flex-1">
+                      <Image
+                        src={item.imagePath}
+                        alt={item.label}
+                        fill
+                        sizes="(max-width: 1023px) 50vw, 25vw"
+                        className="object-contain"
+                      />
+                    </div>
+                    <span className="text-2xl font-bold mt-3">{item.label}</span>
+                  </>
                 ) : (
                   <span className="flex min-h-0 w-full flex-1 items-center justify-center text-2xl font-black text-[var(--brand-secondary)]">
                     {item.label}
                   </span>
                 )}
-                <span className="text-2xl font-bold mt-3">{item.label}</span>
               </button>
             )
           })}
