@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import AuditLogList from '@/components/admin/AuditLogList'
+import AuditLogControls from '@/components/admin/AuditLogControls'
 
 export default async function AdminAuditLogsPage() {
   const supabase = await createClient()
@@ -30,9 +31,12 @@ export default async function AdminAuditLogsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Audit Logs</h1>
-        <p className="text-muted-foreground">Activity history across all teachers, students, and admins.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Audit Logs</h1>
+          <p className="text-muted-foreground">Activity history across all teachers, students, and admins.</p>
+        </div>
+        <AuditLogControls />
       </div>
 
       <AuditLogList logs={logList} />
