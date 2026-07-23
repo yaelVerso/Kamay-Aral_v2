@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { MODULES } from '@/content/registry'
 import ProgressRing from '@/components/student/ProgressRing'
+import ModuleAccordion from '@/components/shared/ModuleAccordion'
 
 export default async function ProgressPage() {
   const supabase = await createClient()
@@ -21,6 +22,10 @@ export default async function ProgressPage() {
     return Math.round((viewed / totalItems) * 100)
   }
 
+  function attemptFor(submoduleId: string) {
+    return attempts?.find((a) => a.submodule_id === submoduleId)
+  }
+
   return (
     <div className="px-4 pt-8 pb-4 space-y-6">
       <div>
@@ -28,44 +33,38 @@ export default async function ProgressPage() {
         <p className="text-sm text-muted-foreground">Your progress across all modules.</p>
       </div>
 
-      <div>
-        <div className="space-y-3">
-          {MODULES.map((mod) => {
-            const totalItems = mod.subModules.reduce((sum, sm) => sum + sm.items.length, 0)
-            const percent = moduleProgress(mod.id, totalItems)
-            return (
-              <div key={mod.id} className="flex items-center gap-3 rounded-xl bg-[#ECE7DF] p-4 border border-[#DAD2C5]">
-                <span className="text-2xl">{mod.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[#694B26] font-bold truncate">{mod.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {totalItems > 0 ? `${Math.round((percent / 100) * totalItems)}/${totalItems} items viewed` : 'Coming soon'}
-                  </p>
-                </div>
-                <ProgressRing percent={percent} size={44} strokeWidth={4} />
-              </div>
-            )
-          })}
-        </div>
-      </div>
+      <ModuleAccordion
+        sections={MODULES.filter((mod) => mod.subModules.length > 0).map((mod) => {
+          const totalItems = mod.subModules.reduce((sum, sm) => sum + sm.items.length, 0)
+          const percent = moduleProgress(mod.id, totalItems)
 
-      {attempts && attempts.length > 0 && (
-        <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Completed Quizzes
-          </h2>
-          <div className="space-y-2">
-            {attempts.map((a) => (
-              <div key={a.submodule_id} className="flex items-center justify-between rounded-xl border bg-card p-3 shadow-sm">
-                <p className="text-sm font-medium">{a.submodule_id}</p>
-                <span className="text-sm font-bold text-indigo-600">
-                  {a.score}/{a.total}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+          return {
+            id: mod.id,
+            title: mod.title,
+            icon: mod.icon,
+            badge: <ProgressRing percent={percent} size={36} strokeWidth={4} />,
+            content: (
+              <>
+                {mod.subModules.map((sm) => {
+                  const attempt = attemptFor(sm.id)
+                  return (
+                    <div key={sm.id} className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm">
+                      <p className="font-medium text-sm">{sm.title}</p>
+                      {attempt ? (
+                        <span className="text-sm font-bold text-[var(--brand-secondary)]">
+                          {attempt.score}/{attempt.total}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">No quiz taken yet</span>
+                      )}
+                    </div>
+                  )
+                })}
+              </>
+            ),
+          }
+        })}
+      />
     </div>
   )
 }

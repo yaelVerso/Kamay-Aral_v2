@@ -29,6 +29,7 @@ const formatter = new Intl.DateTimeFormat('en-US', {
   day: 'numeric',
   hour: 'numeric',
   minute: '2-digit',
+  second: '2-digit',
 })
 
 export default function AuditLogList({ logs }: { logs: AuditLog[] }) {
