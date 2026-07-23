@@ -24,7 +24,7 @@ export default function StudentNav() {
               href={href}
               className={cn(
                 'flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors',
-                active ? 'text-[#007B89]' : 'text-muted-foreground hover:text-foreground',
+                active ? 'text-[var(--brand-primary)]' : 'text-muted-foreground hover:text-foreground',
               )}
             >
               <Icon className="h-5 w-5" />
