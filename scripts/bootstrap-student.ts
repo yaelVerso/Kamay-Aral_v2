@@ -1,6 +1,6 @@
 /**
  * Test-only script to create a student account directly, bypassing
- * the email invite flow (useful while Resend isn't fully set up).
+ * the email invite flow.
  * Run: npx tsx scripts/bootstrap-student.ts
  *
  * Edit the values below before running.
@@ -14,6 +14,7 @@ const STUDENT_EMAIL = 'student01@example.com'
 const STUDENT_PASSWORD = 'FilSignLangApp'
 const STUDENT_FIRST_NAME = 'Student'
 const STUDENT_LAST_NAME = 'One'
+const STUDENT_ID_NUMBER = 'S-0001'
 // Optional: paste a section UUID here to assign the student immediately,
 // or leave null to create them unassigned (same as admin-created students).
 const STUDENT_SECTION_ID: string | null = null
@@ -41,6 +42,7 @@ async function main() {
     first_name: STUDENT_FIRST_NAME,
     last_name: STUDENT_LAST_NAME,
     email: STUDENT_EMAIL,
+    id_number: STUDENT_ID_NUMBER,
   })
 
   if (studentError) {

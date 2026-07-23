@@ -11,6 +11,7 @@ interface Student {
   id: string
   full_name: string
   email: string | null
+  idNumber: string | null
   sectionName: string | null
   isActive: boolean
 }
@@ -28,7 +29,11 @@ export default function StudentSearchList({ students }: { students: Student[] })
       if (status === 'active' && !s.isActive) return false
       if (status === 'deactivated' && s.isActive) return false
       if (!q) return true
-      return s.full_name.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q)
+      return (
+        s.full_name.toLowerCase().includes(q) ||
+        s.email?.toLowerCase().includes(q) ||
+        s.idNumber?.toLowerCase().includes(q)
+      )
     })
   }, [students, query, status])
 
@@ -40,7 +45,7 @@ export default function StudentSearchList({ students }: { students: Student[] })
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search students…"
+            placeholder="Search by name, email, or ID number…"
             className="pl-9"
           />
         </div>
@@ -82,6 +87,7 @@ export default function StudentSearchList({ students }: { students: Student[] })
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {student.email ?? '—'} · {student.sectionName ?? 'Unassigned'}
+                  {student.idNumber && <> · ID: {student.idNumber}</>}
                 </p>
               </div>
             </div>

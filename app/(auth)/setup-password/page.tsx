@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { Eye, EyeOff } from 'lucide-react'
-import { PASSWORD_MIN_LENGTH, PASSWORD_HINT, isPasswordValid } from '@/lib/passwordPolicy'
+import { PASSWORD_MIN_LENGTH, PASSWORD_HINT, PASSWORD_PLACEHOLDER, isPasswordValid } from '@/lib/passwordPolicy'
 
 function destinationFor(role: string | undefined) {
   if (role === 'admin') return '/admin/overview'
@@ -134,7 +134,7 @@ export default function SetupPasswordPage() {
                 type={showPass ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={PASSWORD_HINT}
+                placeholder={PASSWORD_PLACEHOLDER}
                 required
                 minLength={PASSWORD_MIN_LENGTH}
               />

@@ -10,6 +10,7 @@ interface AuditLog {
   id: string
   actor_name: string
   actor_role: string
+  actorIdNumber: string | null
   description: string
   created_at: string
 }
@@ -41,7 +42,8 @@ export default function AuditLogList({ logs }: { logs: AuditLog[] }) {
       if (!q) return true
       return (
         log.actor_name.toLowerCase().includes(q) ||
-        log.description.toLowerCase().includes(q)
+        log.description.toLowerCase().includes(q) ||
+        log.actorIdNumber?.toLowerCase().includes(q)
       )
     })
   }, [logs, query, role])
@@ -54,7 +56,7 @@ export default function AuditLogList({ logs }: { logs: AuditLog[] }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search logs…"
+            placeholder="Search by name, ID number, or description…"
             className="pl-9"
           />
         </div>
@@ -92,6 +94,9 @@ export default function AuditLogList({ logs }: { logs: AuditLog[] }) {
                   <Badge variant={roleBadgeVariant(log.actor_role)} className="capitalize">
                     {log.actor_role}
                   </Badge>
+                  {log.actorIdNumber && (
+                    <span className="text-xs text-muted-foreground">ID: {log.actorIdNumber}</span>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">{log.description}</p>
               </div>

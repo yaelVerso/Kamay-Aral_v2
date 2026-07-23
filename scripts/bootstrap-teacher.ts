@@ -14,6 +14,7 @@ const TEACHER_EMAIL = 'teacher01@example.com'
 const TEACHER_PASSWORD = 'FilSignLangApp'
 const TEACHER_FIRST_NAME = 'Teacher'
 const TEACHER_LAST_NAME = 'One'
+const TEACHER_ID_NUMBER = 'T-0001'
 
 async function main() {
   const admin = createAdminClient()
@@ -43,6 +44,7 @@ async function main() {
     full_name: fullName,
     first_name: TEACHER_FIRST_NAME,
     last_name: TEACHER_LAST_NAME,
+    id_number: TEACHER_ID_NUMBER,
   })
 
   if (teacherError) {

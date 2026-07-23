@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 interface Teacher {
   id: string
   full_name: string
+  idNumber: string | null
   isActive: boolean
   sectionCount: number
 }
@@ -27,7 +28,7 @@ export default function FacultySearchList({ teachers }: { teachers: Teacher[] })
       if (status === 'active' && !t.isActive) return false
       if (status === 'deactivated' && t.isActive) return false
       if (!q) return true
-      return t.full_name.toLowerCase().includes(q)
+      return t.full_name.toLowerCase().includes(q) || t.idNumber?.toLowerCase().includes(q)
     })
   }, [teachers, query, status])
 
@@ -39,7 +40,7 @@ export default function FacultySearchList({ teachers }: { teachers: Teacher[] })
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search teachers…"
+            placeholder="Search by name or ID number…"
             className="pl-9"
           />
         </div>
@@ -79,7 +80,10 @@ export default function FacultySearchList({ teachers }: { teachers: Teacher[] })
                     <Badge variant="secondary" className="text-xs">Deactivated</Badge>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">{teacher.sectionCount} sections</p>
+                <p className="text-sm text-muted-foreground">
+                  {teacher.sectionCount} sections
+                  {teacher.idNumber && <> · ID: {teacher.idNumber}</>}
+                </p>
               </div>
             </div>
             <span className="text-muted-foreground">›</span>

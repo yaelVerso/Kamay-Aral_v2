@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Eye, EyeOff } from 'lucide-react'
-import { PASSWORD_MIN_LENGTH, PASSWORD_HINT, isPasswordValid } from '@/lib/passwordPolicy'
+import { PASSWORD_MIN_LENGTH, PASSWORD_HINT, PASSWORD_PLACEHOLDER, isPasswordValid } from '@/lib/passwordPolicy'
 
 export default function ChangePasswordForm() {
   const [password, setPassword] = useState('')
@@ -50,7 +50,7 @@ export default function ChangePasswordForm() {
             type={showPass ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder={PASSWORD_HINT}
+            placeholder={PASSWORD_PLACEHOLDER}
             required
             minLength={PASSWORD_MIN_LENGTH}
           />
