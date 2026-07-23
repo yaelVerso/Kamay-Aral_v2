@@ -36,13 +36,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={`${nunito.variable} h-full`} suppressHydrationWarning>
       <head>
-        {/* runs before hydration so saved font-size/theme apply immediately, no flash */}
+        {/* runs before hydration so saved font-size applies immediately, no flash */}
         {/* suppressHydrationWarning: browsers scrub the nonce attribute after parsing */}
         <script
           nonce={nonce}
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `try{var f=localStorage.getItem('fontSize');if(f)document.documentElement.setAttribute('data-font-size',f);var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}`,
+            __html: `try{var f=localStorage.getItem('fontSize');if(f)document.documentElement.setAttribute('data-font-size',f);}catch(e){}`,
           }}
         />
         {(primaryColor || secondaryColor) && (
