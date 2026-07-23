@@ -1,5 +1,5 @@
 import type { SubModule } from '@/content/types'
-import { videoUrl } from '@/lib/media'
+import { videoUrl, imageUrl } from '@/lib/media'
 
 const submodule: SubModule = {
   id: 'food-food',
@@ -8,9 +8,9 @@ const submodule: SubModule = {
   shortTitle: 'Food',
   activitySequence: ['lesson-card', 'sign-to-picture', 'drag-drop-match', 'spelling'],
   items: [
-    { id: 'food-rice', label: 'Rice', videoPath: videoUrl('/videos/food/rice.mp4'), acceptedAnswers: ['rice'] },
-    { id: 'food-bread', label: 'Bread', videoPath: videoUrl('/videos/food/bread.mp4'), acceptedAnswers: ['bread'] },
-    { id: 'food-egg', label: 'Egg', videoPath: videoUrl('/videos/food/egg.mp4'), acceptedAnswers: ['egg'] },
+    { id: 'food-rice', label: 'Rice', videoPath: videoUrl('/videos/food/rice.mp4'), imagePath: imageUrl('/images/8 - food/8 - rice.png'), acceptedAnswers: ['rice'] },
+    { id: 'food-bread', label: 'Bread', videoPath: videoUrl('/videos/food/bread.mp4'), imagePath: imageUrl('/images/8 - food/8 - bread.png'),acceptedAnswers: ['bread'] },
+    { id: 'food-egg', label: 'Egg', videoPath: videoUrl('/videos/food/egg.mp4'), imagePath: imageUrl('/images/8 - food/8 - egg.png'),acceptedAnswers: ['egg'] },
     { id: 'food-fish', label: 'Fish', videoPath: videoUrl('/videos/food/fish.mp4'), acceptedAnswers: ['fish'] },
     { id: 'food-chicken', label: 'Chicken', videoPath: videoUrl('/videos/food/chicken.mp4'), acceptedAnswers: ['chicken'] },
     { id: 'food-vegetables', label: 'Vegetables', videoPath: videoUrl('/videos/food/vegetables.mp4'), acceptedAnswers: ['vegetables', 'vegetable'] },

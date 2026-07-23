@@ -1,5 +1,5 @@
 import type { SubModule } from '@/content/types'
-import { videoUrl } from '@/lib/media'
+import { videoUrl, imageUrl } from '@/lib/media'
 
 const submodule: SubModule = {
   id: 'school-supplies',
@@ -8,9 +8,9 @@ const submodule: SubModule = {
   shortTitle: 'Supplies',
   activitySequence: ['lesson-card', 'sign-to-picture', 'drag-drop-match', 'spelling'],
   items: [
-    { id: 'school-pencil', label: 'Pencil', videoPath: videoUrl('/videos/school/pencil.mp4'), acceptedAnswers: ['pencil'] },
-    { id: 'school-pen', label: 'Pen', videoPath: videoUrl('/videos/school/pen.mp4'), acceptedAnswers: ['pen'] },
-    { id: 'school-crayon', label: 'Crayon', videoPath: videoUrl('/videos/school/crayon.mp4'), acceptedAnswers: ['crayon'] },
+    { id: 'school-pencil', label: 'Pencil', videoPath: videoUrl('/videos/school/pencil.mp4'),imagePath: imageUrl('/images/7 - school/7 - pencil.png'),  acceptedAnswers: ['pencil'] },
+    { id: 'school-pen', label: 'Pen', videoPath: videoUrl('/videos/school/pen.mp4'), imagePath: imageUrl('/images/7 - school/7 - pen.png'), acceptedAnswers: ['pen'] },
+    { id: 'school-crayon', label: 'Crayon', videoPath: videoUrl('/videos/school/crayon.mp4'), imagePath: imageUrl('/images/7 - school/7 - crayon.png'), acceptedAnswers: ['crayon'] },
     { id: 'school-paper', label: 'Paper', videoPath: videoUrl('/videos/school/paper.mp4'), acceptedAnswers: ['paper'] },
     { id: 'school-eraser', label: 'Eraser', videoPath: videoUrl('/videos/school/eraser.mp4'), acceptedAnswers: ['eraser'] },
     { id: 'school-ruler', label: 'Ruler', videoPath: videoUrl('/videos/school/ruler.mp4'), acceptedAnswers: ['ruler'] },
