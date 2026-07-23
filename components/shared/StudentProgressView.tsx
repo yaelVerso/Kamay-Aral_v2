@@ -115,7 +115,8 @@ export default function StudentProgressView({ studentName, sectionId, sectionNam
                           const results = itemAnswers.filter((a) => a.item_id === item.id)
                           const correctCount = results.filter((a) => a.is_correct).length
                           const ratio = results.length > 0 ? correctCount / results.length : null
-                          // green/yellow/red by correct ratio
+                          // All correct -> green. At least half correct (but not all) -> yellow.
+                          // Less than half correct (majority/all wrong) -> red.
                           const status = ratio === null ? null : ratio === 1 ? 'correct' : ratio >= 0.5 ? 'partial' : 'wrong'
                           return (
                             <div
