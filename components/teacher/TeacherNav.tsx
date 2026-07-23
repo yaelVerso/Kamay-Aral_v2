@@ -101,10 +101,7 @@ export default function TeacherNav({ systemName, logoUrl }: Props) {
         <div className="flex flex-col border-b bg-[var(--brand-primary)] pb-2 md:hidden">{content}</div>
       )}
 
-      {/* Desktop sidebar — sticky + h-screen (not min-h-screen) so it stays
-          pinned to the viewport instead of stretching to match tall page
-          content (e.g. a long audit log list), which pushed Settings/Sign
-          out below the fold and required scrolling the whole page to reach. */}
+      {/* h-screen + sticky, not min-h-screen, so it stays pinned instead of stretching with tall content */}
       <aside className="hidden md:flex md:w-70 md:flex-col md:border-r md:bg-[var(--brand-primary)] md:h-screen md:sticky md:top-0 md:overflow-y-auto">
         {content}
       </aside>

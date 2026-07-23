@@ -4,10 +4,7 @@ const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
   : undefined;
 
-// Content-Security-Policy is NOT set here — it needs a fresh nonce on every
-// request (so script-src can drop 'unsafe-inline'), which a static
-// next.config header can't generate. It's built and attached per-request
-// in lib/supabase/middleware.ts instead, alongside the existing auth checks.
+// CSP lives in lib/supabase/middleware.ts instead — needs a fresh nonce per request
 
 const nextConfig: NextConfig = {
   /* config options here */

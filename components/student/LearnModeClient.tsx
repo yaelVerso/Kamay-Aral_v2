@@ -31,9 +31,7 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
     setManualPlay(readBooleanSetting(VIDEO_MANUAL_PLAY_STORAGE_KEY, true))
   }, [])
 
-  // The video element remounts on every item change (key={selectedItem.videoPath}),
-  // so DOM-only properties like playbackRate need to be reapplied each time —
-  // loop is fine since it's bound as a JSX attribute below.
+  // video remounts per item, so playbackRate needs reapplying each time
   useEffect(() => {
     if (videoRef.current) videoRef.current.playbackRate = playbackRate
   }, [selectedItem, playbackRate])
@@ -66,9 +64,7 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
     markViewed(item)
   }
 
-  // The first item is shown immediately via the useState initializer above,
-  // never passing through selectItem() — without this, it's displayed but
-  // never actually recorded as viewed unless the student re-clicks it.
+  // first item bypasses selectItem() via the useState initializer, so mark it viewed here
   useEffect(() => {
     markViewed(submodule.items[0])
     // eslint-disable-next-line react-hooks/exhaustive-deps

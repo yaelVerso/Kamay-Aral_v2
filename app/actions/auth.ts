@@ -25,10 +25,7 @@ export async function requestPasswordResetAction(email: string) {
   return { message: 'If an account exists for that email, we\'ve sent a reset link.' }
 }
 
-// Lets teacher/student sign in with their ID Number instead of email. Admin
-// has no id_number (not a teachers/students row) and always uses email.
-// Throws the same generic message the login page uses for a bad password,
-// so a wrong ID number can't be used to probe which IDs exist.
+// resolves an ID number to its email for login — admin has no id_number, always uses email
 export async function resolveLoginEmail(identifier: string): Promise<string> {
   const trimmed = identifier.trim()
   if (trimmed.includes('@')) return trimmed

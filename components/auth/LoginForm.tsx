@@ -46,18 +46,10 @@ export default function LoginForm({ systemName, logoUrl }: Props) {
         throw new Error('Incorrect email/ID or password')
       }
 
-      // Awaited on purpose: firing this concurrently with the redirect races
-      // the login's session-cookie write against this Server Action's own
-      // request, which can hit middleware before the new session cookie is
-      // in place and throw "refresh token not found". Awaiting first
-      // guarantees the cookie is settled before this (or the navigation)
-      // fires. recordAuditLog never throws, so this can't block on error.
+      // awaited so the session cookie settles before navigating — recordAuditLog never throws
       await recordAuditLog({ action: 'auth.login', description: 'logged in' })
 
-      // Full page navigation, not router.push — a soft client-side
-      // navigation here was intermittently rendering with a stale
-      // pre-login router cache, requiring a manual refresh to show the
-      // destination dashboard. A real navigation always fetches fresh.
+      // full navigation, not router.push, so the destination always fetches fresh
       window.location.href = destinationFor(data.user.user_metadata?.role)
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Login failed')
@@ -139,7 +131,7 @@ export default function LoginForm({ systemName, logoUrl }: Props) {
           </Button>
 
           <p className="text-center text-xs text-muted-foreground">
-            Accounts are created by your teacher or admin.
+            Accounts are created by admin.
           </p>
         </form>
       </CardContent>

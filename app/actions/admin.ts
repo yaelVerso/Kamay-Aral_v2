@@ -140,9 +140,7 @@ export async function createStudentAction(payload: {
   })
 }
 
-// Accounts are never deleted from the app — only deactivated (banned from
-// signing in) or reactivated. Permanent deletion, if ever needed, is a
-// manual operation done directly in Supabase.
+// accounts are deactivated (banned), never deleted — deletion is manual, in Supabase directly
 
 export async function deactivateTeacherAction(teacherId: string) {
   await requireAdmin()

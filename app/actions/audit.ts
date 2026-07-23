@@ -3,15 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-/**
- * Records an audit-log entry for the currently authenticated user.
- * Actor identity (id, role, name) is always derived server-side from the
- * session — a caller can only supply the action/description text for their
- * own action, never impersonate another user's identity in the log.
- *
- * Never throws: a failed log write must never break the feature it's
- * attached to (account creation, quiz submission, etc).
- */
+// actor identity is always derived server-side from the session, never passed in
+// never throws — a failed log write shouldn't break the feature it's attached to
 export async function recordAuditLog(payload: {
   action: string
   description: string
@@ -29,8 +22,7 @@ export async function recordAuditLog(payload: {
     const admin = createAdminClient()
 
     if (!actorName) {
-      // Teachers get full_name in their metadata at creation; students
-      // currently don't, so fall back to a table lookup for either role.
+      // students don't get full_name in metadata at creation, fall back to a table lookup
       const table = role === 'teacher' ? 'teachers' : 'students'
       const { data } = await admin.from(table).select('full_name').eq('id', user.id).single()
       actorName = data?.full_name ?? 'Unknown'
@@ -46,6 +38,6 @@ export async function recordAuditLog(payload: {
       section_name: payload.sectionName ?? null,
     })
   } catch {
-    // Swallow — logging must never surface an error to the caller.
+    // swallow — never surface a logging error to the caller
   }
 }

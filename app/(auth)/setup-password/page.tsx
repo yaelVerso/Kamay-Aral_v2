@@ -31,12 +31,7 @@ export default function SetupPasswordPage() {
 
   useEffect(() => {
     async function processLink() {
-      // detectSessionInUrl is disabled here on purpose: this page must only
-      // ever act on THIS link's own token, never fall back to a session that
-      // happens to already be active in the browser (e.g. an admin testing
-      // the invite flow in the same browser as the invited account) — that
-      // was exactly the bug where opening a teacher's invite link as an
-      // already-logged-in admin ended up changing the admin's own password.
+      // detectSessionInUrl off — must act on this link's token, not an already-active session
       const supabase = createClient({ detectSessionInUrl: false })
       clientRef.current = supabase
 

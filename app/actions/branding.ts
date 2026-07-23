@@ -74,9 +74,7 @@ export async function removeBrandingLogoAction() {
     .eq('id', true)
   if (error) throw new Error(error.message)
 
-  // Best-effort cleanup of the stored file — the branding still resets to
-  // the default logo above even if this fails, so don't let a storage
-  // error surface to the admin.
+  // best-effort file cleanup, don't fail the request if this errors
   if (current?.logo_url) {
     const path = current.logo_url.split('/branding/').pop()
     if (path) await admin.storage.from('branding').remove([path])

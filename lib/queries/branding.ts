@@ -9,8 +9,7 @@ export interface Branding {
 
 const DEFAULT_SYSTEM_NAME = 'Kamay Aral'
 
-// Publicly readable (see "Everyone: read branding" policy) — the login page
-// needs the system name/logo/colors before the visitor is authenticated.
+// publicly readable — login page needs this before the visitor is authenticated
 export async function getBranding(): Promise<Branding> {
   const supabase = await createClient()
   const { data } = await supabase

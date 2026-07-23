@@ -65,8 +65,7 @@ export default function SectionPerformanceList({ students, attempts, enabledSubm
   }, [students, attempts, scope, submoduleToModule])
 
   const ranked = [...rows].sort((a, b) => {
-    // Students with no quiz data yet always sink to the bottom regardless of sort direction —
-    // they aren't "doing well" or "doing poorly", there's just nothing to rank yet.
+    // no data yet always sinks to the bottom, regardless of sort direction
     if (a.avg === null && b.avg === null) return 0
     if (a.avg === null) return 1
     if (b.avg === null) return -1

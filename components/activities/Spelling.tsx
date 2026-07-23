@@ -21,9 +21,9 @@ function normalize(s: string) {
 
 export default function Spelling({ item, mode, initialAnswer, onAnswer }: Props) {
   const [answer, setAnswer] = useState(initialAnswer ?? '')
-  // Practice-mode reveal lock only — quiz mode never locks (always editable, never reveals).
+  // practice-only reveal lock, quiz never locks
   const [locked, setLocked] = useState(mode === 'activity' && !!initialAnswer)
-  // Quiz-only "pressed" feedback — true right after Save, pops back up once the text changes again.
+  // quiz-only "pressed" state, resets when the text changes
   const [saved, setSaved] = useState(mode === 'quiz' && !!initialAnswer)
   const inputRef = useRef<HTMLInputElement>(null)
 

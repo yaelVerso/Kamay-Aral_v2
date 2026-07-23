@@ -14,9 +14,7 @@ interface MatchResult {
   matchedLabel: string
 }
 
-// One distinct color per pair slot (by the item's stable position in `items`,
-// not display order) so a matched video/picture pair are visually linked by
-// color instead of everything turning the same generic blue.
+// one color per pair slot, keyed by stable position in items, not display order
 const PAIR_COLORS = [
   { border: 'border-[#8B5CF6]', bg: 'bg-[#EDE6FB]', text: 'text-[#6D28D9]' },
   { border: 'border-[#0BC2D7]', bg: 'bg-[#D5ECEF]', text: 'text-[#007B89]' },
@@ -37,9 +35,9 @@ export default function DragDropMatch({ items, mode, initialMatches, onAnswer }:
   // matches[videoId] = pictureId
   const [matches, setMatches] = useState<Record<string, string>>(initialMatches ?? {})
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
-  // Practice-mode reveal lock only — quiz mode never locks (always editable, never reveals).
+  // practice-only reveal lock, quiz never locks
   const [locked, setLocked] = useState(mode === 'activity' && !!initialMatches)
-  // Quiz-only "pressed" feedback — true right after Save, pops back up once a match changes again.
+  // quiz-only "pressed" state, resets when a match changes
   const [saved, setSaved] = useState(mode === 'quiz' && !!initialMatches)
 
   function handleVideoTap(id: string) {

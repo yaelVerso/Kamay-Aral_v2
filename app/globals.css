@@ -49,10 +49,7 @@
 }
 
 :root {
-  /* Admin-configurable branding (see app/actions/branding.ts). Defaults
-     match the app's current look so nothing changes until an admin edits
-     Settings → Branding. Hover/soft shades are derived so every component
-     only ever needs to reference the base two colors. */
+  /* admin-configurable branding, see app/actions/branding.ts */
   --brand-primary: #007B89;
   --brand-secondary: #4f46e5;
   --brand-secondary-hover: color-mix(in srgb, var(--brand-secondary) 85%, black);
@@ -92,8 +89,7 @@
 }
 
 .dark {
-  /* Warm dark theme — deep espresso/brown surfaces with cream text, keeping
-     the brand's teal accent, instead of a neutral gray dark mode. */
+  /* warm espresso/brown surfaces, keeping the brand teal accent */
   --brand-secondary-hover: color-mix(in srgb, var(--brand-secondary) 80%, white);
   --brand-secondary-soft: color-mix(in srgb, var(--brand-secondary) 25%, black);
   --background: #1c130b;

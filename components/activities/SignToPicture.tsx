@@ -20,9 +20,9 @@ interface Props {
 export default function SignToPicture({ item, distractors, mode, initialAnswer, onAnswer }: Props) {
   const [choices] = useState<SignItem[]>(() => shuffle([item, ...distractors.slice(0, 3)]))
   const [selected, setSelected] = useState<string | null>(initialAnswer ?? null)
-  // Practice-mode reveal lock only — quiz mode never locks (always editable, never reveals).
+  // practice-only reveal lock, quiz never locks
   const [locked, setLocked] = useState(mode === 'activity' && !!initialAnswer)
-  // Quiz-only "pressed" feedback — true right after Save, pops back up once the choice changes again.
+  // quiz-only "pressed" state, resets when the choice changes
   const [saved, setSaved] = useState(mode === 'quiz' && !!initialAnswer)
 
   const answered = locked

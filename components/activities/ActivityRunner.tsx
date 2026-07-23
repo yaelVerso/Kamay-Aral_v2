@@ -37,14 +37,8 @@ interface Props {
   attemptId?: string
 }
 
-/**
- * Builds the activity/practice step sequence interleaved per item:
- *   Lesson Card A → Sign to Picture A → Spelling A
- *   Lesson Card B → Sign to Picture B → Spelling B → ...
- *
- * Drag & Drop Match is deliberately excluded here — matching-type
- * questions only appear in Quiz mode, never in practice.
- */
+// interleaved per item: Lesson Card A → Sign to Picture A → Spelling A → Lesson Card B → ...
+// drag-drop-match is quiz-only, skipped here
 function buildActivitySteps(submodule: SubModule): ActivityStep[] {
   const items = submodule.items
   const perItemTypes = submodule.activitySequence.filter((t) => t !== 'drag-drop-match')
@@ -84,34 +78,15 @@ function stepPoints(step: ActivityStep): number {
   return 1
 }
 
-/**
- * Deterministically picks `count` items from `pool` by cycling through it
- * in its authored (content-file) order — every item appears at least once
- * before any repeats when `count >= pool.length`. Unlike a random draw,
- * this returns the SAME set of items every time it's called for a given
- * submodule, which is what makes item selection identical across every
- * student's quiz attempt (so a teacher's Item Analysis is comparing the
- * same questions section-wide, not different random subsets per student).
- * Presentation order is randomized separately, after this fixed selection.
- */
+// cycles through pool in order instead of random draw, so every student gets the same
+// items for a submodule — keeps teacher's Item Analysis comparable section-wide
 function pickItemsCoveringAll(pool: SignItem[], count: number): SignItem[] {
   if (pool.length === 0) return []
   return Array.from({ length: count }, (_, i) => pool[i % pool.length])
 }
 
-/**
- * Builds a fixed-length quiz, grouped by type — 5 Sign to Picture, then
- * 4 Spelling, then 2 Drag & Drop Match groups. WHICH items appear, which
- * type each is tested with, and which items are grouped for matching are
- * all fixed (same for every student on this submodule) via
- * `pickItemsCoveringAll`. Only presentation is randomized per attempt:
- * the order of questions within each block, multiple-choice distractors,
- * and each matching group's on-screen video/picture layout.
- *
- * Sign to Picture and Spelling share one fixed selection (9 items total)
- * rather than two independent picks, so a submodule with 9 or fewer items
- * has every one of them appear somewhere in the quiz.
- */
+// fixed quiz shape: 5 sign-to-picture, 4 spelling, 2 drag-drop-match groups
+// only presentation (question order, distractors, layout) is randomized per attempt
 function buildQuizSteps(submodule: SubModule): ActivityStep[] {
   const hasDragDrop = submodule.activitySequence.includes('drag-drop-match')
   const steps: ActivityStep[] = []
@@ -151,8 +126,7 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
   const router = useRouter()
   const steps = useMemo(() => buildSteps(submodule, mode), [submodule, mode])
   const [stepIndex, setStepIndex] = useState(0)
-  // Index-aligned with `steps`. A Drag & Drop step holds 3 entries (one per
-  // pair); everything else holds 1. `null` means the step isn't answered yet.
+  // index-aligned with steps — drag-drop holds 3 entries, everything else 1, null = unanswered
   const [stepAnswers, setStepAnswers] = useState<(QuizAnswer[] | null)[]>(() => steps.map(() => null))
   const [finished, setFinished] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -310,9 +284,7 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
         </span>
       </div>
 
-      {/* Activity content — flows naturally with the page (no internal
-          scroll region) so Previous/Next below sits directly against it,
-          same as Learn Mode, instead of being pinned to the viewport bottom. */}
+      {/* no internal scroll — Previous/Next sits right below, like Learn Mode */}
       <div className="px-4">
         {current.type === 'lesson-card' && (
           <LessonCard key={stepIndex} item={current.item} />
@@ -356,7 +328,7 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
         )}
       </div>
 
-      {/* Previous / Next — width-matched to the activity content (lg:w-3/4 lg:mx-auto) above */}
+      {/* Previous / Next — width-matched to the content above */}
       <div className="flex gap-3 px-4 pt-4 pb-4 lg:w-3/4 lg:mx-auto">
         <button
           onClick={goPrevious}
