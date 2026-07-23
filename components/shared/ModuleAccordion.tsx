@@ -33,7 +33,7 @@ export default function ModuleAccordion({ sections }: { sections: ModuleSection[
                 <ChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', open && 'rotate-180')} />
               </span>
             </button>
-            {open && <div className="border-t px-4 py-3 space-y-2">{s.content}</div>}
+            <div className={cn('border-t px-4 py-3 space-y-2', !open && 'hidden')}>{s.content}</div>
           </div>
         )
       })}
