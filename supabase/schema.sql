@@ -253,7 +253,14 @@ create policy "Admin: full access quiz_settings" on public.quiz_settings
 
 -- ============================================================
 -- QUIZ ATTEMPTS
--- One attempt per student per sub-module (unless reset).
+-- Multiple attempts per student per sub-module are kept for
+-- history (mastery scoring wants the trend, not just the latest
+-- try). Only one attempt per (student, submodule) may be active
+-- at a time — enforced by the partial unique index below, not a
+-- table-wide constraint. "Reset" deactivates the current attempt
+-- (is_active = false) instead of deleting it, which frees the
+-- student to start a fresh active attempt while the old one's
+-- score/answers stay queryable.
 -- ============================================================
 create table public.quiz_attempts (
   id uuid primary key default gen_random_uuid(),
@@ -263,8 +270,11 @@ create table public.quiz_attempts (
   submitted_at timestamptz,
   score integer,
   total integer,
-  unique (student_id, submodule_id)
+  is_active boolean not null default true
 );
+create unique index quiz_attempts_active_uniq
+  on public.quiz_attempts (student_id, submodule_id)
+  where is_active;
 alter table public.quiz_attempts enable row level security;
 
 create policy "QuizAttempts: own" on public.quiz_attempts
@@ -279,9 +289,10 @@ create policy "QuizAttempts: teacher view" on public.quiz_attempts
     )
   );
 
--- Teachers can delete (reset) an attempt
+-- Teachers can reset (deactivate, not delete) an attempt so the
+-- student can retake — history is preserved for mastery scoring.
 create policy "QuizAttempts: teacher reset" on public.quiz_attempts
-  for delete using (
+  for update using (
     student_id in (
       select s.id from public.students s
       join public.sections sec on s.section_id = sec.id

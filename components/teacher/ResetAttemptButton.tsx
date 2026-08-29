@@ -21,14 +21,13 @@ export default function ResetAttemptButton({ attemptId, studentName, submoduleTi
   const router = useRouter()
 
   async function handleReset() {
-    if (!confirm('Reset this student\'s quiz attempt? This cannot be undone.')) return
+    if (!confirm(`Let ${studentName} retake this quiz? Their previous score stays on record.`)) return
     setLoading(true)
     try {
       const supabase = createClient()
-      // explicit delete, don't rely solely on ON DELETE CASCADE
-      const { error: answersError } = await supabase.from('quiz_answers').delete().eq('attempt_id', attemptId)
-      if (answersError) throw answersError
-      const { error } = await supabase.from('quiz_attempts').delete().eq('id', attemptId)
+      // Deactivate, don't delete — keeps the score/answers for history
+      // and frees the (student, submodule) slot for a new active attempt.
+      const { error } = await supabase.from('quiz_attempts').update({ is_active: false }).eq('id', attemptId)
       if (error) throw error
       await recordAuditLog({
         action: 'attempt.reset',

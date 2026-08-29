@@ -34,9 +34,9 @@ export type Database = {
         Relationships: []
       }
       quiz_attempts: {
-        Row: { id: string; student_id: string; submodule_id: string; started_at: string; submitted_at: string | null; score: number | null; total: number | null }
-        Insert: { id?: string; student_id: string; submodule_id: string; started_at?: string; submitted_at?: string | null; score?: number | null; total?: number | null }
-        Update: { id?: string; student_id?: string; submodule_id?: string; started_at?: string; submitted_at?: string | null; score?: number | null; total?: number | null }
+        Row: { id: string; student_id: string; submodule_id: string; started_at: string; submitted_at: string | null; score: number | null; total: number | null; is_active: boolean }
+        Insert: { id?: string; student_id: string; submodule_id: string; started_at?: string; submitted_at?: string | null; score?: number | null; total?: number | null; is_active?: boolean }
+        Update: { id?: string; student_id?: string; submodule_id?: string; started_at?: string; submitted_at?: string | null; score?: number | null; total?: number | null; is_active?: boolean }
         Relationships: []
       }
       quiz_answers: {

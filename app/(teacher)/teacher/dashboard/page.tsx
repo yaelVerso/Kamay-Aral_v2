@@ -27,6 +27,7 @@ export default async function TeacherDashboardPage() {
       .from('quiz_attempts')
       .select('student_id, score, total')
       .in('student_id', studentIds)
+      .eq('is_active', true)
       .not('submitted_at', 'is', null)
     : { data: [] }
 

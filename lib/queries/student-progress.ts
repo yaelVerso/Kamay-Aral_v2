@@ -8,10 +8,13 @@ export async function getStudentProgress(supabase: SupabaseServerClient, student
       .from('learn_progress')
       .select('module_id, submodule_id, item_id')
       .eq('student_id', studentId),
+    // All attempts (not just the active one) so teacher/admin review can
+    // step back through a student's history after a reset.
     supabase
       .from('quiz_attempts')
-      .select('id, submodule_id, score, total, submitted_at')
-      .eq('student_id', studentId),
+      .select('id, submodule_id, score, total, submitted_at, started_at, is_active')
+      .eq('student_id', studentId)
+      .order('started_at', { ascending: true }),
   ])
 
   const attemptIds = attempts?.map((a) => a.id) ?? []

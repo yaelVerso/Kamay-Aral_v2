@@ -18,6 +18,7 @@ export default async function ModulePage({ params }: { params: Promise<{ moduleI
       .from('quiz_attempts')
       .select('submodule_id, score, total')
       .eq('student_id', user!.id)
+      .eq('is_active', true)
       .not('submitted_at', 'is', null),
     supabase.from('students').select('section_id').eq('id', user!.id).single(),
   ])

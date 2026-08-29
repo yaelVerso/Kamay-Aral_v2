@@ -31,6 +31,7 @@ export default async function SectionDetailPage({ params }: Props) {
         .from('quiz_attempts')
         .select('student_id, submodule_id, score, total, submitted_at')
         .in('student_id', studentIds)
+        .eq('is_active', true)
         .not('submitted_at', 'is', null)
     : { data: [] }
 

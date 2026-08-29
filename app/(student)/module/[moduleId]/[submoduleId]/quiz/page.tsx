@@ -35,13 +35,15 @@ export default async function QuizPage({ params }: Props) {
 
   if (!setting?.enabled) redirect(`/module/${moduleId}/${submoduleId}`)
 
-  // Check existing attempt
+  // Check existing active attempt (a reset deactivates the old one,
+  // so this only ever sees the current try, not past history)
   const { data: existing } = await supabase
     .from('quiz_attempts')
     .select('id, submitted_at')
     .eq('student_id', user.id)
     .eq('submodule_id', submodule.id)
-    .single()
+    .eq('is_active', true)
+    .maybeSingle()
 
   // Already submitted → redirect back
   if (existing?.submitted_at) redirect(`/module/${moduleId}/${submoduleId}`)

@@ -13,6 +13,7 @@ export default async function ProgressPage() {
       .from('quiz_attempts')
       .select('submodule_id, score, total, submitted_at')
       .eq('student_id', user!.id)
+      .eq('is_active', true)
       .not('submitted_at', 'is', null),
   ])
 
