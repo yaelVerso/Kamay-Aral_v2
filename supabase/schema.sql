@@ -17,58 +17,6 @@ as $$
 $$;
 
 -- ============================================================
--- current_student_section_id() / current_student_teacher_id()
--- SECURITY DEFINER so the lookup runs as the function owner and
--- bypasses RLS internally. Required because "Students: view own
--- section" (on sections) and "Students: view own teacher" (on
--- teachers) need to read the student's own students row, but
--- "Teachers: manage students" (on students) reads sections — a
--- plain subquery on students from a sections/teachers policy
--- creates a students <-> sections RLS cycle that Postgres detects
--- as infinite recursion (error 42P17) on EVERY query against
--- students, not just the section/teacher lookups.
--- ============================================================
-create or replace function public.current_student_section_id()
-returns uuid
-language sql stable security definer
-set search_path = public
-as $$
-  select section_id from public.students where id = auth.uid();
-$$;
-
-create or replace function public.current_student_teacher_id()
-returns uuid
-language sql stable security definer
-set search_path = public
-as $$
-  select sec.teacher_id
-  from public.students s
-  join public.sections sec on sec.id = s.section_id
-  where s.id = auth.uid();
-$$;
-
--- ============================================================
--- is_teacher_of_custom_module() — same recursion fix as above,
--- for the same reason: "CustomModules: student reads assigned"
--- (on custom_modules) reads custom_module_sections, and
--- "CustomModuleSections: teacher manages own" (on
--- custom_module_sections) read custom_modules — a plain subquery
--- there creates a custom_modules <-> custom_module_sections RLS
--- cycle (error 42P17). SECURITY DEFINER bypasses RLS internally
--- so the ownership check doesn't re-trigger custom_modules' policies.
--- ============================================================
-create or replace function public.is_teacher_of_custom_module(target_module_id uuid)
-returns boolean
-language sql stable security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.custom_modules
-    where id = target_module_id and teacher_id = auth.uid()
-  );
-$$;
-
--- ============================================================
 -- TEACHERS
 -- Uses Supabase Auth (auth.users) for credentials.
 -- One auth.user = one teacher profile.
@@ -101,10 +49,9 @@ create policy "Teachers: own profile" on public.teachers
 create policy "Admin: full access teachers" on public.teachers
   for all using (public.is_admin());
 
--- Students: read their own section's teacher (for the Profile page's
--- "Class" card — name only, via the "own profile" columns above).
-create policy "Students: view own teacher" on public.teachers
-  for select using (id = public.current_student_teacher_id());
+-- "Students: view own teacher" is added further below, once
+-- current_student_teacher_id() exists — that function needs
+-- students and sections, both created after this table.
 
 -- ============================================================
 -- SECTIONS
@@ -125,9 +72,9 @@ create policy "Sections: teacher owns" on public.sections
 create policy "Admin: full access sections" on public.sections
   for all using (public.is_admin());
 
--- Students: read their own section (for the Profile page's "Class" card)
-create policy "Students: view own section" on public.sections
-  for select using (id = public.current_student_section_id());
+-- "Students: view own section" is added further below, once
+-- current_student_section_id() exists — that function needs the
+-- students table, created after this one.
 
 -- ============================================================
 -- STUDENTS
@@ -207,6 +154,48 @@ create policy "Teachers: claim unassigned students" on public.students
 -- Admin: full access
 create policy "Admin: full access students" on public.students
   for all using (public.is_admin());
+
+-- ============================================================
+-- current_student_section_id() / current_student_teacher_id()
+-- SECURITY DEFINER so the lookup runs as the function owner and
+-- bypasses RLS internally. Required because "Students: view own
+-- section" (on sections) and "Students: view own teacher" (on
+-- teachers) need to read the student's own students row, but
+-- "Teachers: manage students" (on students) reads sections — a
+-- plain subquery on students from a sections/teachers policy
+-- creates a students <-> sections RLS cycle that Postgres detects
+-- as infinite recursion (error 42P17) on EVERY query against
+-- students, not just the section/teacher lookups.
+-- Defined here (not up with is_admin()) because a LANGUAGE SQL
+-- function's body is validated against the catalog at CREATE
+-- time — both students and sections must already exist.
+-- ============================================================
+create or replace function public.current_student_section_id()
+returns uuid
+language sql stable security definer
+set search_path = public
+as $$
+  select section_id from public.students where id = auth.uid();
+$$;
+
+create or replace function public.current_student_teacher_id()
+returns uuid
+language sql stable security definer
+set search_path = public
+as $$
+  select sec.teacher_id
+  from public.students s
+  join public.sections sec on sec.id = s.section_id
+  where s.id = auth.uid();
+$$;
+
+-- Deferred from the TEACHERS section above — needs current_student_teacher_id().
+create policy "Students: view own teacher" on public.teachers
+  for select using (id = public.current_student_teacher_id());
+
+-- Deferred from the SECTIONS section above — needs current_student_section_id().
+create policy "Students: view own section" on public.sections
+  for select using (id = public.current_student_section_id());
 
 -- ============================================================
 -- LEARN PROGRESS
@@ -380,6 +369,26 @@ create table public.custom_modules (
   created_at timestamptz not null default now()
 );
 alter table public.custom_modules enable row level security;
+
+-- is_teacher_of_custom_module() — SECURITY DEFINER, same recursion
+-- fix as current_student_section_id() above. "CustomModules:
+-- student reads assigned" (below) reads custom_module_sections, and
+-- "CustomModuleSections: teacher manages own" reads custom_modules —
+-- a plain subquery there creates a custom_modules <->
+-- custom_module_sections RLS cycle (error 42P17). Must be defined
+-- here, after custom_modules exists — Postgres rejected this
+-- function at CREATE time (42P01) when it was placed earlier in
+-- the file, before the table it references existed.
+create or replace function public.is_teacher_of_custom_module(target_module_id uuid)
+returns boolean
+language sql stable security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.custom_modules
+    where id = target_module_id and teacher_id = auth.uid()
+  );
+$$;
 
 -- Which of a teacher's sections a custom module is visible to.
 -- Created here (before the policies below) because "CustomModules:
