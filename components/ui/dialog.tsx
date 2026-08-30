@@ -56,6 +56,11 @@ function DialogContent({
           "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
+        // The dialog renders through a portal, but React's synthetic click
+        // event still bubbles through the *component* tree, not the DOM tree —
+        // so a click on anything in here (Save, the built-in X, etc.) would
+        // otherwise reach a Link wrapping the dialog's trigger and navigate.
+        onClick={(e) => e.stopPropagation()}
         {...props}
       >
         {children}

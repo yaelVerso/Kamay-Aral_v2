@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, Settings, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Users, BookOpen, Settings, LogOut, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { recordAuditLog } from '@/app/actions/audit'
@@ -14,6 +14,7 @@ const navItemClass = 'flex items-center gap-2 rounded-md px-6 py-3 text-sm font-
 const links = [
   { href: '/teacher/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/teacher/sections', label: 'Class Management', icon: Users },
+  { href: '/teacher/modules', label: 'Manage Modules', icon: BookOpen },
 ]
 
 interface Props {
