@@ -1,14 +1,18 @@
 /**
- * Turns a pasted YouTube or Google Drive share link into an embeddable
- * iframe URL. YouTube (unlisted) is the recommended source — reliable
- * playback with no per-viewer throttling. Drive is accepted as a
- * fallback but can rate-limit under concurrent classroom viewing.
+ * Turns a pasted YouTube link into an embeddable iframe URL. YouTube is
+ * the only supported video source for custom signs — Google Drive was
+ * dropped after repeated embed issues (cropping, no controls exposed,
+ * no autoplay, broken layout on narrow viewports) with no equivalent
+ * player API to work around them. Cloudinary is a future option under
+ * consideration.
  */
-export type VideoSource = 'youtube' | 'drive' | 'unknown'
+export type VideoSource = 'youtube' | 'unknown'
 
 export interface ParsedVideo {
   source: VideoSource
   embedUrl: string | null
+  /** The extracted YouTube video id, if recognized — used to build autoplay/loop params. */
+  id: string | null
 }
 
 function extractYoutubeId(url: string): string | null {
@@ -22,25 +26,15 @@ function extractYoutubeId(url: string): string | null {
   return null
 }
 
-function extractDriveId(url: string): string | null {
-  const match = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/)
-  return match ? match[1] : null
-}
-
 export function parseVideoUrl(url: string): ParsedVideo {
   const trimmed = url.trim()
 
   const youtubeId = extractYoutubeId(trimmed)
   if (youtubeId) {
-    return { source: 'youtube', embedUrl: `https://www.youtube.com/embed/${youtubeId}` }
+    return { source: 'youtube', embedUrl: `https://www.youtube.com/embed/${youtubeId}`, id: youtubeId }
   }
 
-  const driveId = extractDriveId(trimmed)
-  if (driveId) {
-    return { source: 'drive', embedUrl: `https://drive.google.com/file/d/${driveId}/preview` }
-  }
-
-  return { source: 'unknown', embedUrl: null }
+  return { source: 'unknown', embedUrl: null, id: null }
 }
 
 export function isValidVideoUrl(url: string): boolean {

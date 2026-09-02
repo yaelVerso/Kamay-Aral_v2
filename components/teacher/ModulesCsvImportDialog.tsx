@@ -132,7 +132,7 @@ export default function ModulesCsvImportDialog() {
       } else if (!videoUrl) {
         errors.push({ row: rowNum, reason: 'has label but missing video_url' }); continue
       } else if (!parseVideoUrl(videoUrl).embedUrl) {
-        errors.push({ row: rowNum, reason: 'video_url is not a recognized YouTube or Google Drive link' }); continue
+        errors.push({ row: rowNum, reason: 'video_url is not a recognized YouTube link' }); continue
       }
 
       const moduleKey = moduleTitle.toLowerCase()

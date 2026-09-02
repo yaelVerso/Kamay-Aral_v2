@@ -1,8 +1,9 @@
 'use client'
 
 import type { SignItem } from '@/content/types'
-import Image from 'next/image'
 import { labelTextSize } from '@/lib/utils'
+import SignVideo from '@/components/shared/SignVideo'
+import SignImage from '@/components/shared/SignImage'
 
 interface Props {
   item: SignItem
@@ -15,16 +16,8 @@ export default function LessonCard({ item }: Props) {
         Learn this sign
       </p>
 
-      <div className="relative aspect-video w-full rounded-2xl bg-black overflow-hidden">
-        <video
-          key={item.videoPath}
-          src={item.videoPath}
-          autoPlay
-          loop
-          playsInline
-          muted
-          className="h-full w-full object-contain"
-        />
+      <div className="relative aspect-video w-full min-h-[220px] rounded-2xl bg-black overflow-hidden">
+        <SignVideo videoPath={item.videoPath} className="h-full w-full object-contain" />
       </div>
 
       <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-6 shadow-xs border-2 border-[#DAD2C5]">
@@ -32,7 +25,7 @@ export default function LessonCard({ item }: Props) {
         {item.labelFil && <span className="text-base text-muted-foreground">{item.labelFil}</span>}
         {item.imagePath && (
           <div className="relative h-28 w-28 mt-1">
-            <Image src={item.imagePath} alt={item.label} fill className="object-contain" />
+            <SignImage src={item.imagePath} alt={item.label} className="object-contain" />
           </div>
         )}
       </div>

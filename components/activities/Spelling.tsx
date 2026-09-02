@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import SignVideo from '@/components/shared/SignVideo'
 
 interface Props {
   item: SignItem
@@ -58,16 +59,8 @@ export default function Spelling({ item, mode, initialAnswer, onAnswer }: Props)
         Type what sign this is
       </p>
 
-      <div className="relative aspect-video w-full rounded-2xl bg-black overflow-hidden">
-        <video
-          key={item.videoPath}
-          src={item.videoPath}
-          autoPlay
-          loop
-          playsInline
-          muted
-          className="h-full w-full object-contain"
-        />
+      <div className="relative aspect-video w-full min-h-[220px] rounded-2xl bg-black overflow-hidden">
+        <SignVideo videoPath={item.videoPath} className="h-full w-full object-contain" />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">

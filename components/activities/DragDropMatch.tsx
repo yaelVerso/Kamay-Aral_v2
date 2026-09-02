@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import type { SignItem } from '@/content/types'
-import Image from 'next/image'
 import { cn, labelTextSize } from '@/lib/utils'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { shuffle } from '@/lib/shuffle'
+import SignVideo from '@/components/shared/SignVideo'
+import SignImage from '@/components/shared/SignImage'
 
 interface MatchResult {
   itemId: string
@@ -123,14 +124,7 @@ export default function DragDropMatch({ items, mode, initialMatches, onAnswer }:
                   locked && !isCorrect && 'border-red-500 bg-red-50',
                 )}
               >
-                <video
-                  src={item.videoPath}
-                  autoPlay
-                  loop
-                  playsInline
-                  muted
-                  className="aspect-video w-full object-contain bg-black"
-                />
+                <SignVideo videoPath={item.videoPath} className="aspect-video w-full object-contain bg-black" />
                 {matchedItem && !locked && (
                   <div className={cn('px-2 py-1 text-center text-xs font-semibold', color.bg, color.text)}>
                     → {matchedItem.label}
@@ -171,10 +165,9 @@ export default function DragDropMatch({ items, mode, initialMatches, onAnswer }:
                 {item.imagePath ? (
                   <>
                     <div className="relative min-h-0 w-full flex-1">
-                      <Image
+                      <SignImage
                         src={item.imagePath}
                         alt={item.label}
-                        fill
                         sizes="(max-width: 1023px) 50vw, 25vw"
                         className="object-contain"
                       />

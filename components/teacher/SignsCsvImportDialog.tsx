@@ -79,7 +79,7 @@ export default function SignsCsvImportDialog({ submoduleId, nextOrder }: Props) 
             return
           }
           if (!parseVideoUrl(videoUrl).embedUrl) {
-            errors.push({ row: rowNum, label, reason: 'video_url is not a recognized YouTube or Google Drive link' })
+            errors.push({ row: rowNum, label, reason: 'video_url is not a recognized YouTube link' })
             return
           }
 

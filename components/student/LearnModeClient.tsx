@@ -6,26 +6,36 @@ import { ChevronLeft, ChevronRight, Play, Pause, Repeat } from 'lucide-react'
 import Link from 'next/link'
 import { labelTextSize } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import Image from 'next/image'
 import {
   readBooleanSetting,
   VIDEO_MANUAL_PLAY_STORAGE_KEY,
 } from '@/lib/settings'
+import { parseVideoUrl } from '@/lib/videoEmbed'
+import SignImage from '@/components/shared/SignImage'
+import YoutubeLearnPlayer, { type YoutubePlayerHandle } from '@/components/student/YoutubeLearnPlayer'
 
 interface Props {
   module: Module
   submodule: SubModule
+  /** Defaults to the built-in module route; pass `/class/{id}` for a custom module. */
+  backHref?: string
 }
 
 const SPEEDS = [0.5, 0.75, 1] as const
 
-export default function LearnModeClient({ module: mod, submodule }: Props) {
+export default function LearnModeClient({ module: mod, submodule, backHref }: Props) {
   const [selectedItem, setSelectedItem] = useState<SignItem>(submodule.items[0])
   const [manualPlay, setManualPlay] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const ytPlayerRef = useRef<YoutubePlayerHandle>(null)
   const [looping, setLooping] = useState(false)
   const [playbackRate, setPlaybackRate] = useState<(typeof SPEEDS)[number]>(1)
   const [isPaused, setIsPaused] = useState(true)
+
+  const parsedVideo = parseVideoUrl(selectedItem.videoPath)
+  // YouTube gets full custom-control parity via its real player API (see
+  // YoutubeLearnPlayer). Everything else falls back to a plain <video>.
+  const isYoutube = parsedVideo.source === 'youtube'
 
   useEffect(() => {
     setManualPlay(readBooleanSetting(VIDEO_MANUAL_PLAY_STORAGE_KEY, true))
@@ -37,6 +47,11 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
   }, [selectedItem, playbackRate])
 
   function togglePause() {
+    if (isYoutube) {
+      if (isPaused) ytPlayerRef.current?.play()
+      else ytPlayerRef.current?.pause()
+      return
+    }
     const video = videoRef.current
     if (!video) return
     if (video.paused) video.play()
@@ -91,7 +106,7 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
       {/* Header */}
       <div className="flex items-center gap-2 px-4 pt-6 pb-3">
         <Link
-          href={`/module/${mod.id}`}
+          href={backHref ?? `/module/${mod.id}`}
           className="flex items-center gap-1 text-base text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-5 w-5" />
@@ -125,25 +140,38 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
         {/* Main viewer */}
         <div className="flex-1 space-y-4">
           {/* Video */}
-          <div className="relative aspect-video w-full rounded-2xl bg-black overflow-hidden">
-            <video
-              key={selectedItem.videoPath}
-              ref={videoRef}
-              src={selectedItem.videoPath}
-              controls
-              loop={looping}
-              autoPlay={!manualPlay}
-              playsInline
-              preload="metadata"
-              className="h-full w-full object-contain"
-              onPlay={() => setIsPaused(false)}
-              onPause={() => setIsPaused(true)}
-            >
-              <source src={selectedItem.videoPath} type="video/mp4" />
-            </video>
+          <div className="relative aspect-video w-full min-h-[220px] rounded-2xl bg-black overflow-hidden">
+            {isYoutube && parsedVideo.id ? (
+              <YoutubeLearnPlayer
+                key={selectedItem.videoPath}
+                ref={ytPlayerRef}
+                videoId={parsedVideo.id}
+                className="h-full w-full"
+                autoplay={!manualPlay}
+                looping={looping}
+                playbackRate={playbackRate}
+                onPauseChange={setIsPaused}
+              />
+            ) : (
+              <video
+                key={selectedItem.videoPath}
+                ref={videoRef}
+                src={selectedItem.videoPath}
+                controls
+                loop={looping}
+                autoPlay={!manualPlay}
+                playsInline
+                preload="metadata"
+                className="h-full w-full object-contain"
+                onPlay={() => setIsPaused(false)}
+                onPause={() => setIsPaused(true)}
+              >
+                <source src={selectedItem.videoPath} type="video/mp4" />
+              </video>
+            )}
           </div>
 
-          {/* Video controls — icon-only, supplementing the native scrub bar */}
+          {/* Video controls — icon-only, supplementing the native scrub bar. */}
           <div className="flex items-center justify-center gap-2">
             <button
               onClick={togglePause}
@@ -182,12 +210,7 @@ export default function LearnModeClient({ module: mod, submodule }: Props) {
             )}
             {selectedItem.imagePath && (
               <div className="relative h-32 w-32">
-                <Image
-                  src={selectedItem.imagePath}
-                  alt={selectedItem.label}
-                  fill
-                  className="object-contain"
-                />
+                <SignImage src={selectedItem.imagePath} alt={selectedItem.label} className="object-contain" />
               </div>
             )}
           </div>

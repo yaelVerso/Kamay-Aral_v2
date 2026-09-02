@@ -444,9 +444,9 @@ create policy "CustomSubmodules: student reads assigned" on public.custom_submod
 create policy "Admin: full access custom_submodules" on public.custom_submodules
   for all using (public.is_admin());
 
--- video_url accepts a YouTube (recommended, reliable embedding) or
--- Google Drive share link — parsed into an embeddable URL at render
--- time (see lib/videoEmbed.ts), not validated at the DB layer.
+-- video_url accepts a YouTube link — parsed into an embeddable URL at
+-- render time (see lib/videoEmbed.ts), not validated at the DB layer.
+
 create table public.custom_signs (
   id uuid primary key default gen_random_uuid(),
   submodule_id uuid not null references public.custom_submodules(id) on delete cascade,

@@ -62,7 +62,7 @@ export default function CustomSignDialog({ submoduleId, nextOrder, editingSign }
     e.preventDefault()
     if (!label.trim() || !videoUrl.trim()) return
     if (!parseVideoUrl(videoUrl).embedUrl) {
-      toast.error('Video link must be a YouTube or Google Drive link')
+      toast.error('Video link must be a YouTube link')
       return
     }
     setLoading(true)
@@ -123,7 +123,7 @@ export default function CustomSignDialog({ submoduleId, nextOrder, editingSign }
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Sign' : 'Add Sign'}</DialogTitle>
           <DialogDescription>
-            Paste a YouTube (recommended) or Google Drive link for the sign&apos;s video.
+            Paste a YouTube link for the sign&apos;s video.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSave} className="space-y-3">
@@ -149,13 +149,13 @@ export default function CustomSignDialog({ submoduleId, nextOrder, editingSign }
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="sign-video">Video link (YouTube or Google Drive)</Label>
+            <Label htmlFor="sign-video">Video link (YouTube)</Label>
             <Input id="sign-video" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." required />
             {videoUrl.trim() && (
               <p className={`text-xs ${parsedVideo?.embedUrl ? 'text-emerald-600' : 'text-amber-600'}`}>
                 {parsedVideo?.embedUrl
-                  ? `Recognized as ${parsedVideo.source === 'youtube' ? 'YouTube' : 'Google Drive'} link`
-                  : '⚠ Not a recognized YouTube or Google Drive link'}
+                  ? 'Recognized as YouTube link'
+                  : '⚠ Not a recognized YouTube link'}
               </p>
             )}
           </div>

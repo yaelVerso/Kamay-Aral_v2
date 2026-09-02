@@ -68,9 +68,9 @@ export default async function TeacherSubmoduleDetailPage({ params }: Props) {
                 {sign.description && <p className="text-sm text-muted-foreground truncate">{sign.description}</p>}
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {parsed.source === 'unknown' ? (
-                    <span className="text-amber-600">⚠ Video link not recognized (use a YouTube or Drive link)</span>
+                    <span className="text-amber-600">⚠ Video link not recognized (use a YouTube link)</span>
                   ) : (
-                    <>Video: {parsed.source === 'youtube' ? 'YouTube' : 'Google Drive'}</>
+                    <>Video: YouTube</>
                   )}
                   {sign.accepted_answers?.length > 0 && ` · Accepted answers: ${sign.accepted_answers.join(', ')}`}
                 </p>

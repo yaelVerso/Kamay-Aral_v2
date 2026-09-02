@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import type { SignItem } from '@/content/types'
-import Image from 'next/image'
 import { cn, labelTextSize } from '@/lib/utils'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { shuffle } from '@/lib/shuffle'
+import SignVideo from '@/components/shared/SignVideo'
+import SignImage from '@/components/shared/SignImage'
 
 interface Props {
   item: SignItem
@@ -51,16 +52,8 @@ export default function SignToPicture({ item, distractors, mode, initialAnswer, 
         What sign is this?
       </p>
 
-      <div className="relative aspect-video w-full rounded-2xl bg-black overflow-hidden">
-        <video
-          key={item.videoPath}
-          src={item.videoPath}
-          autoPlay
-          loop
-          playsInline
-          muted
-          className="h-full w-full object-contain"
-        />
+      <div className="relative aspect-video w-full min-h-[220px] rounded-2xl bg-black overflow-hidden">
+        <SignVideo videoPath={item.videoPath} className="h-full w-full object-contain" />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -85,7 +78,7 @@ export default function SignToPicture({ item, distractors, mode, initialAnswer, 
               {choice.imagePath ? (
                 <>
                   <div className="relative h-20 w-full">
-                    <Image src={choice.imagePath} alt={choice.label} fill className="object-contain" />
+                    <SignImage src={choice.imagePath} alt={choice.label} className="object-contain" />
                   </div>
                   <span className={`${labelTextSize(choice.label, ['text-xl', 'text-base', 'text-sm'])} break-words text-center font-bold`}>{choice.label}</span>
                 </>

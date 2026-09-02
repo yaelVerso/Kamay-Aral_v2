@@ -35,6 +35,8 @@ interface Props {
   submodule: SubModule
   mode: 'activity' | 'quiz'
   attemptId?: string
+  /** Defaults to the built-in module route; pass `/class/{id}/{submoduleId}` for a custom module. */
+  backHref?: string
 }
 
 // interleaved per item: Lesson Card A → Sign to Picture A → Spelling A → Lesson Card B → ...
@@ -122,8 +124,9 @@ function buildSteps(submodule: SubModule, mode: 'activity' | 'quiz'): ActivitySt
   return mode === 'quiz' ? buildQuizSteps(submodule) : buildActivitySteps(submodule)
 }
 
-export default function ActivityRunner({ module: mod, submodule, mode, attemptId }: Props) {
+export default function ActivityRunner({ module: mod, submodule, mode, attemptId, backHref }: Props) {
   const router = useRouter()
+  const exitHref = backHref ?? `/module/${mod.id}/${submodule.id}`
   const steps = useMemo(() => buildSteps(submodule, mode), [submodule, mode])
   const [stepIndex, setStepIndex] = useState(0)
   // index-aligned with steps — drag-drop holds 3 entries, everything else 1, null = unanswered
@@ -251,7 +254,7 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
         )}
 
         <button
-          onClick={() => router.push(`/module/${mod.id}/${submodule.id}`)}
+          onClick={() => router.push(exitHref)}
           className="w-full max-w-xs rounded-xl py-4 text-lg font-bold text-white bg-[#0BC2D7] shadow-[0_4px_0_#149AA9] hover:bg-[#00B7CB] transition-colors "
         >
           Back to {submodule.shortTitle}
@@ -267,7 +270,7 @@ export default function ActivityRunner({ module: mod, submodule, mode, attemptId
       {/* Progress bar + close */}
       <div className="flex items-center gap-3 px-4 pt-5 pb-3">
         <button
-          onClick={() => router.push(`/module/${mod.id}/${submodule.id}`)}
+          onClick={() => router.push(exitHref)}
           className="shrink-0 rounded-full p-1 hover:bg-muted transition-colors"
           aria-label="Exit"
         >

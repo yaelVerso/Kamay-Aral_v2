@@ -5,6 +5,7 @@ import { ChevronLeft } from 'lucide-react'
 import SectionDetailView from '@/components/shared/SectionDetailView'
 import DeleteSectionButton from '@/components/shared/DeleteSectionButton'
 import { MODULES } from '@/content/registry'
+import { getCustomModulesForSection } from '@/lib/queries/customContent'
 
 interface Props { params: Promise<{ sectionId: string }> }
 
@@ -13,10 +14,11 @@ export default async function SectionDetailPage({ params }: Props) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: section }, { data: students }, { data: quizSettings }] = await Promise.all([
+  const [{ data: section }, { data: students }, { data: quizSettings }, customModules] = await Promise.all([
     supabase.from('sections').select('id, name, teacher_id').eq('id', sectionId).single(),
     supabase.from('students').select('id, full_name').eq('section_id', sectionId).order('full_name'),
     supabase.from('quiz_settings').select('submodule_id, enabled').eq('section_id', sectionId),
+    getCustomModulesForSection(supabase, sectionId),
   ])
 
   if (!section || section.teacher_id !== user!.id) notFound()
@@ -35,7 +37,10 @@ export default async function SectionDetailPage({ params }: Props) {
         .not('submitted_at', 'is', null)
     : { data: [] }
 
-  const enabledSubmoduleIds = MODULES.flatMap((mod) => mod.subModules.filter((sm) => isEnabled(sm.id)).map((sm) => sm.id))
+  const enabledSubmoduleIds = [
+    ...MODULES.flatMap((mod) => mod.subModules.filter((sm) => isEnabled(sm.id)).map((sm) => sm.id)),
+    ...customModules.flatMap((mod) => mod.subModules.filter((sm) => isEnabled(sm.id)).map((sm) => sm.id)),
+  ]
 
   const studentRows = (students ?? []).map((student) => {
     const studentAttempts = (attempts ?? [])
@@ -74,6 +79,7 @@ export default async function SectionDetailPage({ params }: Props) {
         attempts={(attempts ?? []).map((a) => ({ ...a, submitted_at: a.submitted_at! }))}
         enabledSubmoduleIds={enabledSubmoduleIds}
         isEnabled={isEnabled}
+        customModules={customModules}
         studentHref={(studentId) => `/teacher/sections/${sectionId}/students/${studentId}`}
         allowCreateStudent={false}
       />

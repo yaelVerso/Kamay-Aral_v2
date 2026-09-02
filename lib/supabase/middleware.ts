@@ -20,9 +20,12 @@ function buildCsp(nonce: string): string {
     scriptSrc,
     // unsafe-inline for styles — inline style="" attrs are common here and can't execute code
     `style-src 'self' 'unsafe-inline'`,
-    // blob: for the logo preview before upload, data: for inline images
-    `img-src 'self' data: blob: ${supabaseOrigin}`,
+    // blob: for the logo preview before upload, data: for inline images, https:
+    // for teacher-pasted external sign images (arbitrary hosts, can't allow-list in advance)
+    `img-src 'self' data: blob: https: ${supabaseOrigin}`,
     `media-src 'self' ${supabaseOrigin}`,
+    // YouTube embeds for teacher-added custom sign videos (see lib/videoEmbed.ts)
+    `frame-src 'self' https://www.youtube.com`,
     `connect-src 'self' ${supabaseOrigin}`,
     `font-src 'self'`,
     `object-src 'none'`,

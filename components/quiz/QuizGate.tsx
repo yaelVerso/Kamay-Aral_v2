@@ -9,13 +9,14 @@ interface Props {
   module: Module
   submodule: SubModule
   attemptId: string
+  backHref?: string
 }
 
-export default function QuizGate({ module: mod, submodule, attemptId }: Props) {
+export default function QuizGate({ module: mod, submodule, attemptId, backHref }: Props) {
   const [started, setStarted] = useState(false)
 
   if (started) {
-    return <ActivityRunner module={mod} submodule={submodule} mode="quiz" attemptId={attemptId} />
+    return <ActivityRunner module={mod} submodule={submodule} mode="quiz" attemptId={attemptId} backHref={backHref} />
   }
 
   const questionCount = getQuizQuestionCount(submodule)
