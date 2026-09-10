@@ -10,11 +10,11 @@ config({ path: '.env.local' })
 
 import { createAdminClient } from '../lib/supabase/admin'
 
-const STUDENT_EMAIL = 'student01@example.com'
-const STUDENT_PASSWORD = 'FilSignLangApp'
+const STUDENT_EMAIL = 'student05@example.com'
+const STUDENT_PASSWORD = 'Filsignlangapp1'
 const STUDENT_FIRST_NAME = 'Student'
-const STUDENT_LAST_NAME = 'One'
-const STUDENT_ID_NUMBER = 'S-0001'
+const STUDENT_LAST_NAME = 'Five'
+const STUDENT_ID_NUMBER = 'S-0005'
 // Optional: paste a section UUID here to assign the student immediately,
 // or leave null to create them unassigned (same as admin-created students).
 const STUDENT_SECTION_ID: string | null = null

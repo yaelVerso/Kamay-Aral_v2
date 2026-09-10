@@ -49,7 +49,7 @@ export default function SectionDetailView({ sectionId, sectionName, students, at
           <AddExistingStudentDialog sectionId={sectionId} />
         </div>
 
-        <div className="mt-3 space-y-2">
+        <div className="mt-3 max-h-80 space-y-2 overflow-y-auto">
           {students.map((student) => (
             <div
               key={student.id}

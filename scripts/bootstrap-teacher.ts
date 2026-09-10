@@ -11,7 +11,7 @@ config({ path: '.env.local' })
 import { createAdminClient } from '../lib/supabase/admin'
 
 const TEACHER_EMAIL = 'teacher01@example.com'
-const TEACHER_PASSWORD = 'FilSignLangApp'
+const TEACHER_PASSWORD = 'Filsignlangapp1'
 const TEACHER_FIRST_NAME = 'Teacher'
 const TEACHER_LAST_NAME = 'One'
 const TEACHER_ID_NUMBER = 'T-0001'

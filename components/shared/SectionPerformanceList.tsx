@@ -128,7 +128,7 @@ export default function SectionPerformanceList({ students, attempts, enabledSubm
         </button>
       </div>
 
-      <div className="space-y-2">
+      <div className="max-h-80 space-y-2 overflow-y-auto">
         {ranked.map((student, idx) => (
           <Link
             key={student.id}
