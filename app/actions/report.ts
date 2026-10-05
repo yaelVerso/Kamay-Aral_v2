@@ -24,7 +24,7 @@ export async function generateReportAction(studentId: string, moduleIds?: string
 
   const { data: student } = await supabase
     .from('students')
-    .select('full_name, section_id')
+    .select('section_id')
     .eq('id', studentId)
     .single()
   if (!student) throw new Error('Student not found')
@@ -46,7 +46,7 @@ export async function generateReportAction(studentId: string, moduleIds?: string
   const topics = buildTopicReportData(modules, attempts, answers, practiceAnswers)
 
   try {
-    return await generateStudentReport(student.full_name, topics)
+    return await generateStudentReport(topics)
   } catch {
     throw new Error('Could not generate the report right now. Please try again.')
   }
@@ -78,17 +78,26 @@ export async function generateSectionReportAction(sectionId: string, moduleIds?:
   const allModules = await getReportableModulesForSection(supabase, sectionId)
   const modules = resolveModules(moduleIds, allModules)
 
+  // Students are referred to by a throwaway per-request label, never their real
+  // name, in anything sent to Gemini — the label-to-name map below exists only
+  // for the duration of this call, to rehydrate the final text afterward.
+  const labelToName = new Map<string, string>(students.map((s, i) => [`Student ${i + 1}`, s.full_name]))
+
   const perStudent: { studentName: string; topics: TopicReportData[] }[] = await Promise.all(
-    students.map(async (s) => {
+    students.map(async (s, i) => {
       const { attempts, answers, practiceAnswers } = await getStudentProgress(supabase, s.id)
-      return { studentName: s.full_name, topics: buildTopicReportData(modules, attempts, answers, practiceAnswers) }
+      return { studentName: `Student ${i + 1}`, topics: buildTopicReportData(modules, attempts, answers, practiceAnswers) }
     }),
   )
 
   const classData = buildClassReportData(perStudent)
 
   try {
-    return await generateClassReport(section.name, classData)
+    const report = await generateClassReport(section.name, classData)
+    // Longest labels first so "Student 10" is replaced before "Student 1" can
+    // partially match inside it.
+    const labels = [...labelToName.keys()].sort((a, b) => b.length - a.length)
+    return labels.reduce((text, label) => text.split(label).join(labelToName.get(label)!), report)
   } catch {
     throw new Error('Could not generate the report right now. Please try again.')
   }

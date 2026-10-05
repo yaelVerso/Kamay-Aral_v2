@@ -18,7 +18,7 @@ function groupByModule(topics: TopicReportData[]): Map<string, TopicReportData[]
   return map
 }
 
-function buildPrompt(studentName: string, topics: TopicReportData[]): string {
+function buildPrompt(topics: TopicReportData[]): string {
   const moduleBlocks = [...groupByModule(topics)].map(([moduleTitle, topicsInModule]) => {
     const lines = topicsInModule.map((t) => {
       const weak = t.weakItems.length > 0
@@ -32,7 +32,6 @@ function buildPrompt(studentName: string, topics: TopicReportData[]): string {
 
   return `You are summarizing a student's sign-language practice and quiz data for their teacher.
 
-Student: ${studentName}
 Per-module, per-topic data (combined practice + quiz accuracy):
 ${moduleBlocks}
 
@@ -54,12 +53,12 @@ Rules: do not invent any number, sign name, module, or topic not listed above. T
  * computes or decides anything itself — see buildTopicReportData for the
  * actual (non-AI) assessment math this narrates.
  */
-export async function generateStudentReport(studentName: string, topics: TopicReportData[]): Promise<string> {
+export async function generateStudentReport(topics: TopicReportData[]): Promise<string> {
   if (topics.length === 0) {
-    return `${studentName} hasn't completed any practice or quiz activity yet — nothing to report on.`
+    return `No practice or quiz activity yet — nothing to report on.`
   }
 
   const model = gemini.getGenerativeModel({ model: GEMINI_REPORT_MODEL })
-  const result = await model.generateContent(buildPrompt(studentName, topics))
+  const result = await model.generateContent(buildPrompt(topics))
   return result.response.text()
 }

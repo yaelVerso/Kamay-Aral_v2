@@ -41,6 +41,8 @@ export async function uploadBrandingLogoAction(formData: FormData) {
   const file = formData.get('logo')
   if (!(file instanceof File) || file.size === 0) throw new Error('No file provided')
 
+  const { data: current } = await admin.from('app_settings').select('logo_url').eq('id', true).single()
+
   const ext = file.name.split('.').pop() || 'png'
   const path = `logo-${Date.now()}.${ext}`
 
@@ -56,6 +58,12 @@ export async function uploadBrandingLogoAction(formData: FormData) {
     .update({ logo_url: publicUrl.publicUrl, updated_at: new Date().toISOString() })
     .eq('id', true)
   if (error) throw new Error(error.message)
+
+  // best-effort cleanup of the old logo file, don't fail the request if this errors
+  if (current?.logo_url) {
+    const oldPath = current.logo_url.split('/branding/').pop()
+    if (oldPath) await admin.storage.from('branding').remove([oldPath])
+  }
 
   await recordAuditLog({ action: 'branding.update', description: 'updated system logo' })
 

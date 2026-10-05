@@ -47,7 +47,7 @@ Overall Summary
 Students Needing Individual Attention
 <name the students flagged above across multiple topics, or state plainly that none stand out if the list says so>
 
-Rules: do not invent any number, student name, module, or topic not listed above. Keep it concise, plain text only, no tables or markdown formatting (no #, *, or **).`
+Rules: do not invent any number, student name, module, or topic not listed above. Always write each student's label in full on its own, e.g. "Student 1 and Student 2" — never shorten to "Students 1 and 2" or combine labels. Keep it concise, plain text only, no tables or markdown formatting (no #, *, or **).`
 }
 
 /**
