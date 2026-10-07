@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getAllAdminModulesWithContent, getTeacherIdForStudent } from '@/lib/queries/adminContent'
 import Link from 'next/link'
 import ProgressRing from '@/components/student/ProgressRing'
+import { moduleColorStyle } from '@/lib/moduleColorStyle'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -37,24 +38,32 @@ export default async function DashboardPage() {
           const totalItems = mod.subModules.reduce((sum, sm) => sum + sm.items.length, 0)
           const percent = moduleProgress(mod.id, totalItems)
           const hasContent = mod.subModules.length > 0
+          const { className: colorClassName, style: colorStyle } = moduleColorStyle(mod.color)
 
           return (
             <Link
               key={mod.id}
               href={hasContent ? `/main/${mod.id}` : '#'}
-              className={`relative flex flex-col gap-3 mt-1 rounded-2xl ${mod.color} p-4 transition-all active:scale-95 ${!hasContent ? 'opacity-50 pointer-events-none' : ''
+              className={`relative flex flex-col mt-1 rounded-2xl ${colorClassName} p-3 md:p-4 transition-all active:scale-95 ${!hasContent ? 'opacity-50 pointer-events-none' : ''
                 }`}
+              style={colorStyle}
             >
               <div className="flex items-start justify-between">
-                <span className="text-3xl lg:text-5xl">{mod.icon}</span>
-                <ProgressRing percent={percent} size={52} strokeWidth={5} />
+                <span className="text-2xl md:text-3xl lg:text-5xl">{mod.icon}</span>
+                <div className="md:hidden">
+                  <ProgressRing percent={percent} size={36} strokeWidth={4} />
+                </div>
+                <div className="hidden md:block lg:hidden">
+                  <ProgressRing percent={percent} size={44} strokeWidth={5} />
+                </div>
+                <div className="hidden lg:block">
+                  <ProgressRing percent={percent} size={52} strokeWidth={5} />
+                </div>
               </div>
-              <div>
-                <p className="lg:mt-10 font-extrabold text-white text-xl">{mod.title}</p>
-                <p className="text-xs text-[#fafafabd] mt-0.5">
-                  {hasContent ? `${mod.subModules.length} sections` : 'Coming soon'}
-                </p>
-              </div>
+              <p className="mt-2 md:mt-4 lg:mt-10 font-extrabold text-white text-base md:text-lg lg:text-xl">{mod.title}</p>
+              <p className="text-xs text-[#fafafabd] mt-auto pt-3">
+                {hasContent ? `${mod.subModules.length} sections` : 'Coming soon'}
+              </p>
             </Link>
           )
         })}
