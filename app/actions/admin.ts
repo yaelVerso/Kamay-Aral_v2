@@ -273,7 +273,7 @@ export async function resendTeacherInviteAction(teacherId: string) {
   if (userError || !authUser.user.email) throw new Error('Could not find that teacher\'s email address')
 
   const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-    type: 'invite',
+    type: 'recovery',
     email: authUser.user.email,
     options: { redirectTo: `${SITE_URL}/setup-password?role=teacher` },
   })
@@ -292,7 +292,7 @@ export async function resendStudentInviteAction(studentId: string) {
   if (!student?.email) throw new Error('That student has no email on file')
 
   const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-    type: 'invite',
+    type: 'recovery',
     email: student.email,
     options: { redirectTo: `${SITE_URL}/setup-password?role=student` },
   })
