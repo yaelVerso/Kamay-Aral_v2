@@ -45,6 +45,13 @@ export default function SignVideo({ videoPath, className }: Props) {
     const iframe = document.createElement('iframe')
     iframe.src = src
     iframe.className = 'h-full w-full'
+    // Every interactive affordance is already stripped via the URL params
+    // above (no controls, fullscreen, keyboard, annotations) — this is a
+    // purely decorative autoplay/muted/loop preview. Without this, clicks
+    // land inside the iframe's cross-origin document and never bubble up
+    // to the parent <button> (e.g. the matching-quiz video tiles), making
+    // the whole tile unclickable.
+    iframe.style.pointerEvents = 'none'
     iframe.setAttribute('allow', 'autoplay; encrypted-media')
     iframe.setAttribute('frameborder', '0')
     container.appendChild(iframe)
