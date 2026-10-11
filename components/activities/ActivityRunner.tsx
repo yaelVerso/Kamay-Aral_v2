@@ -104,10 +104,13 @@ function stepPoints(step: ActivityStep): number {
 }
 
 // cycles through pool in order instead of random draw, so every student gets the same
-// items for a submodule — keeps teacher's Sign Breakdown comparable section-wide
-function pickItemsCoveringAll(pool: SignItem[], count: number): SignItem[] {
+// items for a submodule — keeps teacher's Sign Breakdown comparable section-wide.
+// startIndex lets callers continue from where an earlier pool left off instead of
+// every pool re-covering the same leading items, so submodules bigger than a single
+// pool still get full coverage across the whole quiz.
+function pickItemsCoveringAll(pool: SignItem[], count: number, startIndex = 0): SignItem[] {
   if (pool.length === 0) return []
-  return Array.from({ length: count }, (_, i) => pool[i % pool.length])
+  return Array.from({ length: count }, (_, i) => pool[(startIndex + i) % pool.length])
 }
 
 // fixed quiz shape: 5 sign-to-picture, 4 spelling, 2 drag-drop-match groups
@@ -146,7 +149,11 @@ function buildQuizSteps(submodule: SubModule): ActivityStep[] {
   }
 
   if (hasDragDrop && submodule.items.length >= 3) {
-    const dragDropPool = pickItemsCoveringAll(submodule.items, QUIZ_DRAG_DROP_GROUP_COUNT * 3)
+    const dragDropPool = pickItemsCoveringAll(
+      submodule.items,
+      QUIZ_DRAG_DROP_GROUP_COUNT * 3,
+      QUIZ_SIGN_TO_PICTURE_COUNT + QUIZ_SPELLING_COUNT,
+    )
     for (let g = 0; g < QUIZ_DRAG_DROP_GROUP_COUNT; g++) {
       const group = dragDropPool.slice(g * 3, g * 3 + 3)
       const groupOccurrences = group.map((it) => nextOccurrence('drag-drop-match', it.id))

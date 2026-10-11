@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import LogoutButton from '@/components/shared/LogoutButton'
 import FontSizeControl from '@/components/shared/FontSizeControl'
-import VideoPlaybackSettings from '@/components/shared/VideoPlaybackSettings'
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm'
-import { Separator } from '@/components/ui/separator'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -71,8 +69,6 @@ export default async function ProfilePage() {
         </h2>
         <div className="rounded-xl border bg-card p-4 shadow-sm space-y-5">
           <FontSizeControl />
-          <Separator />
-          <VideoPlaybackSettings />
         </div>
       </div>
 

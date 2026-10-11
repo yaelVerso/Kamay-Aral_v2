@@ -6,10 +6,6 @@ import { ChevronLeft, ChevronRight, Play, Pause, Repeat } from 'lucide-react'
 import Link from 'next/link'
 import { labelTextSize } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import {
-  readBooleanSetting,
-  VIDEO_MANUAL_PLAY_STORAGE_KEY,
-} from '@/lib/settings'
 import { parseVideoUrl } from '@/lib/videoEmbed'
 import SignImage from '@/components/shared/SignImage'
 import YoutubeLearnPlayer, { type YoutubePlayerHandle } from '@/components/student/YoutubeLearnPlayer'
@@ -27,7 +23,6 @@ export default function LearnModeClient({ module: mod, submodule, backHref }: Pr
   // null = primary video (selectedItem.videoPath); otherwise a variation's id.
   // Reset to primary whenever the sign itself changes, in selectItem()/the mount effect below.
   const [activeVariationId, setActiveVariationId] = useState<string | null>(null)
-  const [manualPlay, setManualPlay] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
   const ytPlayerRef = useRef<YoutubePlayerHandle>(null)
   const [looping, setLooping] = useState(false)
@@ -41,10 +36,6 @@ export default function LearnModeClient({ module: mod, submodule, backHref }: Pr
   // YouTube gets full custom-control parity via its real player API (see
   // YoutubeLearnPlayer). Everything else falls back to a plain <video>.
   const isYoutube = parsedVideo.source === 'youtube'
-
-  useEffect(() => {
-    setManualPlay(readBooleanSetting(VIDEO_MANUAL_PLAY_STORAGE_KEY, true))
-  }, [])
 
   // video remounts per item/variation, so playbackRate needs reapplying each time
   useEffect(() => {
@@ -153,7 +144,7 @@ export default function LearnModeClient({ module: mod, submodule, backHref }: Pr
                 ref={ytPlayerRef}
                 videoId={parsedVideo.id}
                 className="h-full w-full"
-                autoplay={!manualPlay}
+                autoplay
                 looping={looping}
                 playbackRate={playbackRate}
                 onPauseChange={setIsPaused}
@@ -168,7 +159,7 @@ export default function LearnModeClient({ module: mod, submodule, backHref }: Pr
                 // control row below via videoRef, so native controls would
                 // just be a redundant, duplicate set of buttons.
                 loop={looping}
-                autoPlay={!manualPlay}
+                autoPlay
                 playsInline
                 preload="metadata"
                 className="h-full w-full object-contain"
