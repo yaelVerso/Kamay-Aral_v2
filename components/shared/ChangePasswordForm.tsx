@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Eye, EyeOff } from 'lucide-react'
 import { PASSWORD_MIN_LENGTH, PASSWORD_HINT, PASSWORD_PLACEHOLDER, isPasswordValid } from '@/lib/passwordPolicy'
+import { recordAuditLog } from '@/app/actions/audit'
 
 export default function ChangePasswordForm() {
   const [currentPassword, setCurrentPassword] = useState('')
@@ -44,6 +45,7 @@ export default function ChangePasswordForm() {
 
       const { error } = await supabase.auth.updateUser({ password })
       if (error) throw error
+      await recordAuditLog({ action: 'auth.password_changed', description: 'changed password' })
       toast.success('Password updated')
       setCurrentPassword('')
       setPassword('')
