@@ -25,7 +25,6 @@ export default async function ClassQuizPage({ params }: Props) {
 
   if (!student || !student.section_id) redirect('/dashboard')
 
-  // Check quiz enabled
   const { data: setting } = await supabase
     .from('quiz_settings')
     .select('enabled')
@@ -45,10 +44,8 @@ export default async function ClassQuizPage({ params }: Props) {
     .eq('is_active', true)
     .maybeSingle()
 
-  // Already submitted → redirect back
   if (existing?.submitted_at) redirect(`/class/${moduleId}`)
 
-  // Create attempt if none exists
   let attemptId = existing?.id
   if (!attemptId) {
     const { data: newAttempt } = await supabase

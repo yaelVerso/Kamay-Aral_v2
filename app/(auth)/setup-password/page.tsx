@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { Eye, EyeOff } from 'lucide-react'
 import { PASSWORD_MIN_LENGTH, PASSWORD_HINT, PASSWORD_PLACEHOLDER, isPasswordValid } from '@/lib/passwordPolicy'
 import { clearLoginLockoutAction } from '@/app/actions/auth'
+import { recordAuditLogForUser } from '@/app/actions/audit'
 
 function destinationFor(role: string | undefined) {
   if (role === 'admin') return '/admin/overview'
@@ -85,7 +86,12 @@ export default function SetupPasswordPage() {
       if (error) throw error
 
       const { data: { user } } = await supabase.auth.getUser()
-      if (user) await clearLoginLockoutAction(user.id)
+      if (user) {
+        await clearLoginLockoutAction(user.id)
+        // recordAuditLogForUser, not recordAuditLog - the server-side cookie
+        // session isn't guaranteed synced yet, so the actor is passed in directly.
+        await recordAuditLogForUser(user, { action: 'auth.password_changed', description: 'changed password via recovery link' })
+      }
       toast.success('Password set successfully')
       router.push(destinationFor(user?.user_metadata?.role))
       router.refresh()

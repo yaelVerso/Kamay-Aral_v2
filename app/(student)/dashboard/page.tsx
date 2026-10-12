@@ -9,7 +9,6 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   const teacherId = await getTeacherIdForStudent(supabase, user!.id)
 
-  // Count viewed items per module for progress rings
   const [{ data: student }, { data: learnRows }, adminModules] = await Promise.all([
     supabase.from('students').select('first_name, full_name').eq('id', user!.id).single(),
     supabase.from('learn_progress').select('module_id, item_id').eq('student_id', user!.id),

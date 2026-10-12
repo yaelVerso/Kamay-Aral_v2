@@ -7,8 +7,6 @@ import { toast } from 'sonner'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { recordAuditLog } from '@/app/actions/audit'
-// Used as a page-header action (sub-module's own detail page), not an
-// inline list-row icon — styled to match DeleteAdminModuleButton.
 
 interface Props {
   submoduleId: string

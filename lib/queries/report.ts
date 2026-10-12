@@ -2,8 +2,9 @@ import type { Module } from '@/content/types'
 
 // Below this many combined practice+quiz answers, a topic's percentage is too
 // noisy to show with any confidence — flagged as 'insufficient-data' instead
-// of a raw (often extreme) percentage. See the BKT-removal planning
-// discussion this is a deliberately simpler replacement for.
+// of a raw (often extreme) percentage. A deliberately simple threshold in
+// place of a proper mastery-tracking model (e.g. Bayesian Knowledge Tracing),
+// which was evaluated and dropped as more complexity than this needs.
 const MIN_ATTEMPTS_FOR_CONFIDENCE = 5
 const MASTERED_THRESHOLD = 0.8
 const NEEDS_ATTENTION_THRESHOLD = 0.5
