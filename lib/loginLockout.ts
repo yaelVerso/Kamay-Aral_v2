@@ -1,5 +1,5 @@
 export const MAX_LOGIN_ATTEMPTS = 5
-export const LOCKOUT_WINDOW_MINUTES = 2
+export const LOCKOUT_WINDOW_MINUTES = 15
 
 /** "45s", "1m", "2m 30s" — avoids showing raw seconds once the lockout window gets long. */
 export function formatLockoutDuration(totalSeconds: number): string {
