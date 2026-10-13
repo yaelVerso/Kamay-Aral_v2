@@ -28,12 +28,13 @@ export async function createTeacherAction(payload: {
   const lastName = payload.lastName.trim()
   const fullName = `${firstName} ${lastName}`.trim()
   const idNumber = payload.idNumber.trim()
+  const email = payload.email.trim().toLowerCase()
 
   const admin = createAdminClient()
 
   const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
     type: 'invite',
-    email: payload.email,
+    email,
     options: { redirectTo: `${SITE_URL}/setup-password?role=teacher` },
   })
   if (linkError) throw new Error(linkError.message)
@@ -52,7 +53,7 @@ export async function createTeacherAction(payload: {
   await admin.auth.admin.updateUserById(userId, { user_metadata: { role: 'teacher', full_name: fullName } })
 
   try {
-    await sendTeacherInviteEmail(payload.email, fullName, linkData.properties.action_link)
+    await sendTeacherInviteEmail(email, fullName, linkData.properties.action_link)
   } catch {
     throw new Error('Account created but invite email failed to send. Use Resend Invite to try again.')
   }
@@ -88,7 +89,7 @@ export async function createStudentAction(payload: {
   const firstName = payload.firstName.trim()
   const lastName = payload.lastName.trim()
   const fullName = `${firstName} ${lastName}`.trim()
-  const email = payload.email.trim()
+  const email = payload.email.trim().toLowerCase()
   const idNumber = payload.idNumber.trim()
 
   const admin = createAdminClient()
@@ -212,7 +213,7 @@ export async function updateTeacherAction(payload: {
   const lastName = payload.lastName.trim()
   const fullName = `${firstName} ${lastName}`.trim()
   const idNumber = payload.idNumber.trim()
-  const email = payload.email.trim()
+  const email = payload.email.trim().toLowerCase()
 
   const { error: authError } = await admin.auth.admin.updateUserById(payload.teacherId, {
     email,
@@ -247,7 +248,7 @@ export async function updateStudentAction(payload: {
   const lastName = payload.lastName.trim()
   const fullName = `${firstName} ${lastName}`.trim()
   const idNumber = payload.idNumber.trim()
-  const email = payload.email.trim()
+  const email = payload.email.trim().toLowerCase()
 
   const { error: authError } = await admin.auth.admin.updateUserById(payload.studentId, { email })
   if (authError) throw new Error(authError.message)
