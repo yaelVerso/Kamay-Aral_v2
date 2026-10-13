@@ -6,8 +6,8 @@ import type { Module } from '@/content/types'
 // place of a proper mastery-tracking model (e.g. Bayesian Knowledge Tracing),
 // which was evaluated and dropped as more complexity than this needs.
 const MIN_ATTEMPTS_FOR_CONFIDENCE = 5
-const MASTERED_THRESHOLD = 0.8
-const NEEDS_ATTENTION_THRESHOLD = 0.5
+export const MASTERED_THRESHOLD = 0.75
+export const NEEDS_ATTENTION_THRESHOLD = 0.5
 /** An item below this ratio (within an already-confident topic) is called out by name. */
 const WEAK_ITEM_THRESHOLD = 0.5
 

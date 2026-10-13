@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import ResetAttemptButton from '@/components/teacher/ResetAttemptButton'
 import AttemptReview from '@/components/shared/AttemptReview'
 import type { SubModule } from '@/content/types'
+import { MASTERED_THRESHOLD, NEEDS_ATTENTION_THRESHOLD } from '@/lib/queries/report'
 
 interface AttemptRow {
   id: string
@@ -136,7 +137,7 @@ export default function SubModuleAttemptCard({
               const results = combinedAnswers.filter((a) => a.item_id === item.id)
               const correctCount = results.filter((a) => a.is_correct).length
               const ratio = results.length > 0 ? correctCount / results.length : null
-              const status = ratio === null ? null : ratio === 1 ? 'correct' : ratio >= 0.5 ? 'partial' : 'wrong'
+              const status = ratio === null ? null : ratio >= MASTERED_THRESHOLD ? 'correct' : ratio >= NEEDS_ATTENTION_THRESHOLD ? 'partial' : 'wrong'
               return (
                 <div
                   key={item.id}
