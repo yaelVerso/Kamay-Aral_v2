@@ -15,17 +15,12 @@ import { PASSWORD_MIN_LENGTH, PASSWORD_HINT, PASSWORD_PLACEHOLDER, isPasswordVal
 import { clearLoginLockoutAction } from '@/app/actions/auth'
 import { recordAuditLogForUser } from '@/app/actions/audit'
 
-function destinationFor(role: string | undefined) {
-  if (role === 'admin') return '/admin/overview'
-  if (role === 'teacher') return '/teacher/dashboard'
-  return '/dashboard'
-}
-
 export default function SetupPasswordPage() {
   const router = useRouter()
   const clientRef = useRef<SupabaseClient<Database> | null>(null)
   const [checking, setChecking] = useState(true)
   const [valid, setValid] = useState(false)
+  const [done, setDone] = useState(false)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -92,9 +87,11 @@ export default function SetupPasswordPage() {
         // session isn't guaranteed synced yet, so the actor is passed in directly.
         await recordAuditLogForUser(user, { action: 'auth.password_changed', description: 'changed password via recovery link' })
       }
-      toast.success('Password set successfully')
-      router.push(destinationFor(user?.user_metadata?.role))
-      router.refresh()
+      // Sign out instead of carrying the session forward - the user confirms
+      // their new password by logging in with it, rather than being dropped
+      // straight into the dashboard from the (now-spent) recovery link.
+      await supabase.auth.signOut()
+      setDone(true)
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to set password')
     } finally {
@@ -107,6 +104,23 @@ export default function SetupPasswordPage() {
       <Card className="w-full max-w-sm shadow-lg">
         <CardContent className="pt-8 pb-8 text-center text-muted-foreground">
           Checking link…
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (done) {
+    return (
+      <Card className="w-full max-w-sm shadow-lg text-center">
+        <CardContent className="pt-8 pb-8">
+          <div className="mb-2 text-4xl">🎉</div>
+          <h2 className="text-xl font-bold mb-2">You&apos;re all set!</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            Your password has been set successfully. You can now log in with your new password.
+          </p>
+          <Button className="w-full bg-indigo-600 hover:bg-indigo-700" onClick={() => router.push('/login')}>
+            Go to Login
+          </Button>
         </CardContent>
       </Card>
     )
