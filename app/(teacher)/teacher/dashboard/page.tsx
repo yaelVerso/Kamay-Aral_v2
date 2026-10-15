@@ -15,17 +15,19 @@ export default async function TeacherDashboardPage() {
   const sectionIds = sections?.map((s) => s.id) ?? []
 
   const { data: students } = sectionIds.length > 0
-    ? await supabase.from('students').select('id, section_id').in('section_id', sectionIds)
+    ? await supabase.from('students').select('id, section_id, is_active').in('section_id', sectionIds)
     : { data: [] }
 
   const studentCounts = students ?? []
-  const studentIds = students?.map((s) => s.id) ?? []
+  // Only active students feed "Need Attention" — a deactivated student can't
+  // act on the flag anymore, so surfacing them there is just noise for the teacher.
+  const activeStudentIds = (students ?? []).filter((s) => s.is_active !== false).map((s) => s.id)
 
-  const { data: attempts } = studentIds.length > 0
+  const { data: attempts } = activeStudentIds.length > 0
     ? await supabase
       .from('quiz_attempts')
       .select('student_id, score, total')
-      .in('student_id', studentIds)
+      .in('student_id', activeStudentIds)
       .eq('is_active', true)
       .not('submitted_at', 'is', null)
     : { data: [] }
