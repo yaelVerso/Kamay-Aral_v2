@@ -52,7 +52,7 @@ interface Props {
   backHref: string
 }
 
-// interleaved per item: Lesson Card A → Sign to Picture A → Spelling A → Lesson Card B → ...
+// interleaved per item: Sign to Picture A → Spelling A → Sign to Picture B → ...
 // item order is randomized per session (avoids always drilling early items
 // first, which would bias practice-answer data) — but the shuffle itself
 // happens client-side only, after mount (see the effect in the component
@@ -64,17 +64,16 @@ interface Props {
 // the client's hydration pass (Math.random() isn't reproducible across
 // them), which is a hydration mismatch: React would detect server/client
 // HTML disagreeing and force a full client-side re-render to recover.
-// drag-drop-match is quiz-only, skipped here.
+// drag-drop-match is quiz-only, skipped here; lesson-card is Learn Mode
+// only — practice goes straight to testing, no re-teaching step.
 function buildActivitySteps(submodule: SubModule, items: SignItem[]): ActivityStep[] {
-  const perItemTypes = submodule.activitySequence.filter((t) => t !== 'drag-drop-match')
+  const perItemTypes = submodule.activitySequence.filter((t) => t !== 'drag-drop-match' && t !== 'lesson-card')
 
   const steps: ActivityStep[] = []
 
   for (const item of items) {
     for (const type of perItemTypes) {
-      if (type === 'lesson-card') {
-        steps.push({ type, item })
-      } else if (type === 'sign-to-picture') {
+      if (type === 'sign-to-picture') {
         const distractors = shuffle(items.filter((it) => it.id !== item.id))
         steps.push({ type, item, distractors })
       } else if (type === 'spelling') {
