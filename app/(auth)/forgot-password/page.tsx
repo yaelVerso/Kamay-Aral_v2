@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -53,7 +54,7 @@ export default function ForgotPasswordPage() {
   return (
     <Card className="w-full max-w-sm shadow-lg">
       <CardHeader className="space-y-1 text-center">
-        <div className="mb-2 text-4xl">🤟</div>
+        <Image src="/kamay-aral-logo.png" alt="Kamay Aral" width={56} height={56} className="mx-auto mb-2 h-14 w-14 object-contain" />
         <CardTitle className="text-xl font-bold">Forgot password</CardTitle>
         <CardDescription>
           Enter the email on file for the account (for students, this is the email your teacher/admin used when creating the account).
