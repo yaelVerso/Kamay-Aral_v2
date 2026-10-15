@@ -216,6 +216,7 @@ export default function AdminSignDialog({ submoduleId, nextOrder, editingSign }:
                 </Button>
               )}
             </div>
+            <p className="text-xs text-muted-foreground">Max 3MB</p>
           </div>
           <div className="space-y-1">
             <Label htmlFor="admin-sign-answers">Accepted spelling answers</Label>

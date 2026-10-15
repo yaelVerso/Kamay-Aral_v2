@@ -9,6 +9,14 @@ const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  // Next's own Server Action body cap defaults to 1MB, well under
+  // MAX_IMAGE_BYTES (lib/signImagePolicy.ts) — bumped with headroom for
+  // multipart/FormData overhead so a 3MB image actually reaches that check.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '4mb',
+    },
+  },
   images: {
     remotePatterns: supabaseHostname
       ? [
