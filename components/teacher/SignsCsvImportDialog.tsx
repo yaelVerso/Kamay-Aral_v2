@@ -82,6 +82,11 @@ export default function SignsCsvImportDialog({ submoduleId, nextOrder }: Props) 
             errors.push({ row: rowNum, label, reason: 'video_url is not a recognized YouTube link' })
             return
           }
+          const imageUrl = row.image_url?.trim() || null
+          if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+            errors.push({ row: rowNum, label, reason: 'image_url must be a full http(s) link' })
+            return
+          }
 
           const answers = (row.accepted_answers ?? '').split(';').map((a) => a.trim()).filter(Boolean)
           valid.push({
@@ -89,7 +94,7 @@ export default function SignsCsvImportDialog({ submoduleId, nextOrder }: Props) 
             label_fil: row.label_fil?.trim() || null,
             description: row.description?.trim() || null,
             video_url: videoUrl,
-            image_url: row.image_url?.trim() || null,
+            image_url: imageUrl,
             accepted_answers: answers.length > 0 ? answers : [label],
           })
         })

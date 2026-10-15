@@ -7,7 +7,7 @@ interface Props {
   onToggleAll: () => void
 }
 
-/** Which modules (built-in, custom, or admin) to include when generating a report — shared by the per-student and per-section report dialogs. */
+/** Which modules (custom or admin) to include when generating a report — shared by the per-student and per-section report dialogs. */
 export default function ModuleMultiSelect({ modules, selected, onToggle, onToggleAll }: Props) {
   const allSelected = modules.length > 0 && selected.size === modules.length
 

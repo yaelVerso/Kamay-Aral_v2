@@ -31,7 +31,7 @@ interface Props {
   students: StudentBasic[]
   attempts: Attempt[]
   enabledSubmoduleIds: string[]
-  /** Built-in + custom + admin modules, combined — powers the filter pills below. */
+  /** Custom + admin modules, combined — powers the filter pills below. */
   modules: ModuleOption[]
 }
 

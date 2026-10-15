@@ -399,9 +399,8 @@ create policy "Admin: full access practice_answers" on public.practice_answers
 
 -- ============================================================
 -- CUSTOM MODULES (teacher-authored content)
--- Separate from the built-in curriculum in content/registry.ts —
--- purely additive, the 10 built-in modules are untouched by this.
--- A teacher creates modules/submodules/signs of their own and
+-- Separate from admin_modules (admin-authored, universal) — purely
+-- additive. A teacher creates modules/submodules/signs of their own and
 -- chooses which of their own sections can see each module via
 -- custom_module_sections (a module isn't visible school-wide by
 -- default, only to sections it's explicitly assigned to).
@@ -585,13 +584,11 @@ create policy "Admin: full access custom_module_sections" on public.custom_modul
 
 -- ============================================================
 -- ADMIN MODULES (admin-authored, universal curriculum)
--- Separate from custom_modules (teacher-owned, section-scoped) and from
--- the 10 built-in modules (hardcoded in content/registry.ts, not DB rows
--- at all yet — a possible future migration target, not handled here).
+-- Separate from custom_modules (teacher-owned, section-scoped).
 -- No section-assignment table like custom_module_sections: admin content
--- is visible to every student unconditionally, same as the built-in 10
--- already are. Mirrors custom_modules/custom_submodules/custom_signs'
--- shape closely on purpose, so the two CSV formats stay interchangeable.
+-- is visible to every student unconditionally. Mirrors
+-- custom_modules/custom_submodules/custom_signs' shape closely on
+-- purpose, so the two CSV formats stay interchangeable.
 -- ============================================================
 create table public.admin_modules (
   id uuid primary key default gen_random_uuid(),

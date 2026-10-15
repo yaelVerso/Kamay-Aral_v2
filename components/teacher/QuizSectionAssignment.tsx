@@ -17,7 +17,7 @@ const MIN_QUIZ_ITEMS = 3
 
 /**
  * Module-centric quiz control — lives on a sub-module's page in Modules
- * Management (both built-in and custom), mirroring AssignModuleSections'
+ * Management (both admin and custom), mirroring AssignModuleSections'
  * pattern. This is the only place quiz_settings is changed from — the
  * section page no longer shows a duplicate read-only summary of it.
  */

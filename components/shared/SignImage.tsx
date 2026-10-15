@@ -17,8 +17,8 @@ function resolveImageUrl(src: string): string {
 }
 
 /**
- * Renders a sign's image — next/image for built-in (relative /images/...)
- * paths, or a plain <img> for teacher-pasted external URLs. next/image
+ * Renders a sign's image — next/image for relative /images/... paths,
+ * or a plain <img> for teacher/admin-pasted external URLs. next/image
  * refuses any external host not explicitly allow-listed in next.config.ts,
  * which we can't predict for arbitrary teacher-pasted links, so those
  * bypass Next's Image Optimization instead. Always fills its parent —

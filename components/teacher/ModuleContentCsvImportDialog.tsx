@@ -105,6 +105,7 @@ export default function ModuleContentCsvImportDialog({ moduleId }: Props) {
       const submoduleTitle = row.submodule_title?.trim()
       const label = row.label?.trim()
       const videoUrl = row.video_url?.trim()
+      const imageUrl = row.image_url?.trim() || null
 
       if (!submoduleTitle) { errors.push({ row: rowNum, reason: 'missing submodule_title' }); continue }
       if (!label && !videoUrl) {
@@ -115,6 +116,8 @@ export default function ModuleContentCsvImportDialog({ moduleId }: Props) {
         errors.push({ row: rowNum, reason: 'has label but missing video_url' }); continue
       } else if (!parseVideoUrl(videoUrl).embedUrl) {
         errors.push({ row: rowNum, reason: 'video_url is not a recognized YouTube link' }); continue
+      } else if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+        errors.push({ row: rowNum, reason: 'image_url must be a full http(s) link' }); continue
       }
 
       const submoduleKey = submoduleTitle.toLowerCase()
@@ -143,7 +146,7 @@ export default function ModuleContentCsvImportDialog({ moduleId }: Props) {
         label_fil: row.label_fil?.trim() || null,
         description: row.description?.trim() || null,
         video_url: videoUrl,
-        image_url: row.image_url?.trim() || null,
+        image_url: imageUrl,
         accepted_answers: answers.length > 0 ? answers : [label],
         order,
       })

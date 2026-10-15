@@ -9,8 +9,10 @@ interface Props {
 }
 
 /**
- * Renders a sign's video — a plain <video> for built-in (file-hosted)
- * signs, or an embedded iframe for a teacher-added YouTube link.
+ * Renders a sign's video as an embedded YouTube iframe — YouTube is the
+ * only video source admin/teacher sign forms accept (enforced at write
+ * time in both upload dialogs and every CSV importer), so videoPath is
+ * always a YouTube link here.
  *
  * The iframe is created and torn down imperatively via a ref, never
  * rendered directly as JSX — React owns only the wrapping <div>. A
@@ -25,11 +27,10 @@ interface Props {
 export default function SignVideo({ videoPath, className }: Props) {
   const parsed = parseVideoUrl(videoPath)
   const containerRef = useRef<HTMLDivElement>(null)
-  const isEmbed = parsed.source === 'youtube'
 
   useEffect(() => {
     const container = containerRef.current
-    if (!container || !isEmbed || !parsed.embedUrl) return
+    if (!container || !parsed.embedUrl) return
 
     // modestbranding/rel/iv_load_policy/fs/disablekb trim YouTube's own
     // chrome (title bar, related-videos overlay, annotations, fullscreen
@@ -59,21 +60,7 @@ export default function SignVideo({ videoPath, className }: Props) {
     return () => {
       if (iframe.parentNode === container) container.removeChild(iframe)
     }
-  }, [isEmbed, parsed.embedUrl, parsed.id])
+  }, [parsed.embedUrl, parsed.id])
 
-  if (isEmbed) {
-    return <div ref={containerRef} className={className} />
-  }
-
-  return (
-    <video
-      key={videoPath}
-      src={videoPath}
-      autoPlay
-      loop
-      playsInline
-      muted
-      className={className}
-    />
-  )
+  return <div ref={containerRef} className={className} />
 }

@@ -16,7 +16,7 @@ interface Props {
   studentName: string
   sectionId?: string | null
   sectionName?: string | null
-  /** Built-in + this section's assigned custom modules + all admin modules, combined. */
+  /** This section's assigned custom modules + all admin modules, combined. */
   modules: Module[]
   learnProgress: { module_id: string; submodule_id: string; item_id: string }[]
   attempts: AttemptRow[]

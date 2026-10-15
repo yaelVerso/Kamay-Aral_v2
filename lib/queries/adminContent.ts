@@ -171,8 +171,8 @@ export interface AdminModuleSummary {
 
 /**
  * Every admin module's title/icon and sub-module id/title — no signs —
- * for the teacher's per-section quiz toggle list (mirrors how built-in
- * modules are listed there, since admin content is equally global).
+ * for the teacher's per-section quiz toggle list (admin content is
+ * global, so every section sees the same list).
  */
 export async function getAllAdminModules(supabase: SupabaseServerClient): Promise<AdminModuleSummary[]> {
   const { data: modules } = await supabase

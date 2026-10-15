@@ -4,8 +4,8 @@ import type { createClient } from '@/lib/supabase/server'
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
 
 // No per-sub-module activity-sequence configuration in the teacher UI (kept
-// simple) — every custom sub-module gets the same default sequence the
-// built-in modules use. buildQuizSteps/buildActivitySteps already skip
+// simple) — every custom sub-module gets the same default sequence.
+// buildQuizSteps/buildActivitySteps already skip
 // drag-drop-match when there are fewer than 3 items, so a short custom
 // sub-module still works fine without this being configurable.
 const DEFAULT_ACTIVITY_SEQUENCE: SubModule['activitySequence'] = [
