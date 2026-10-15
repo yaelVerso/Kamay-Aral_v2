@@ -56,6 +56,7 @@ export default async function AdminContentSubmoduleDetailPage({ params }: Props)
         submoduleTitle={submodule.title}
         sections={sections ?? []}
         enabledSectionIds={(quizSettings ?? []).map((q) => q.section_id)}
+        itemCount={signCount}
       />
 
       {signs && signs.length > 0 && (

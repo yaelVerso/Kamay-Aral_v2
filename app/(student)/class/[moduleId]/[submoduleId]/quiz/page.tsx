@@ -13,6 +13,7 @@ export default async function ClassQuizPage({ params }: Props) {
   const mod = await getCustomModuleTree(supabase, moduleId)
   const submodule = mod?.subModules.find((sm) => sm.id === submoduleId)
   if (!mod || !submodule) notFound()
+  if (submodule.items.length < 3) redirect(`/class/${moduleId}`)
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')

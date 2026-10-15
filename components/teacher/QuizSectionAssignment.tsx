@@ -10,7 +10,10 @@ interface Props {
   submoduleTitle: string
   sections: Section[]
   enabledSectionIds: string[]
+  itemCount: number
 }
+
+const MIN_QUIZ_ITEMS = 3
 
 /**
  * Module-centric quiz control — lives on a sub-module's page in Modules
@@ -18,7 +21,9 @@ interface Props {
  * pattern. This is the only place quiz_settings is changed from — the
  * section page no longer shows a duplicate read-only summary of it.
  */
-export default function QuizSectionAssignment({ submoduleId, submoduleTitle, sections, enabledSectionIds }: Props) {
+export default function QuizSectionAssignment({ submoduleId, submoduleTitle, sections, enabledSectionIds, itemCount }: Props) {
+  const belowMinimum = itemCount < MIN_QUIZ_ITEMS
+
   if (sections.length === 0) {
     return (
       <div className="rounded-xl border bg-card p-4 shadow-sm">
@@ -33,6 +38,11 @@ export default function QuizSectionAssignment({ submoduleId, submoduleTitle, sec
       <div>
         <h2 className="font-semibold">Quiz Settings</h2>
         <p className="text-sm text-muted-foreground">Enable the quiz for this sub-module, per section.</p>
+        {belowMinimum && (
+          <p className="text-sm text-amber-600 mt-1">
+            Requires at least {MIN_QUIZ_ITEMS} signs to enable (currently {itemCount}).
+          </p>
+        )}
       </div>
       <div className="space-y-2">
         {sections.map((section) => (
@@ -44,6 +54,7 @@ export default function QuizSectionAssignment({ submoduleId, submoduleTitle, sec
               submoduleId={submoduleId}
               submoduleTitle={submoduleTitle}
               initialEnabled={enabledSectionIds.includes(section.id)}
+              disabled={belowMinimum}
             />
           </div>
         ))}

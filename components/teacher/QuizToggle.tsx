@@ -11,13 +11,16 @@ interface Props {
   submoduleId: string
   submoduleTitle: string
   initialEnabled: boolean
+  /** Below the minimum sign count — toggling on is blocked, but an already-enabled quiz stays visible as-is. */
+  disabled?: boolean
 }
 
-export default function QuizToggle({ sectionId, sectionName, submoduleId, submoduleTitle, initialEnabled }: Props) {
+export default function QuizToggle({ sectionId, sectionName, submoduleId, submoduleTitle, initialEnabled, disabled }: Props) {
   const [enabled, setEnabled] = useState(initialEnabled)
   const [loading, setLoading] = useState(false)
 
   async function toggle() {
+    if (disabled && !enabled) return
     setLoading(true)
     const next = !enabled
     try {
@@ -46,9 +49,10 @@ export default function QuizToggle({ sectionId, sectionName, submoduleId, submod
   return (
     <button
       onClick={toggle}
-      disabled={loading}
+      disabled={loading || (disabled && !enabled)}
       aria-checked={enabled}
       role="switch"
+      title={disabled && !enabled ? 'Requires at least 3 signs to enable' : undefined}
       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-secondary)] focus-visible:ring-offset-2 disabled:opacity-50 ${
         enabled ? 'bg-[var(--brand-secondary)]' : 'bg-muted'
       }`}

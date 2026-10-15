@@ -18,6 +18,7 @@ export default async function MainQuizPage({ params }: Props) {
   const mod = await getAdminModuleTree(supabase, moduleId, teacherId)
   const submodule = mod?.subModules.find((sm) => sm.id === submoduleId)
   if (!mod || !submodule) notFound()
+  if (submodule.items.length < 3) redirect(`/main/${moduleId}`)
 
   const { data: student } = await supabase
     .from('students')

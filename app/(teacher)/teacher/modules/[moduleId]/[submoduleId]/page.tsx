@@ -69,6 +69,7 @@ export default async function TeacherSubmoduleDetailPage({ params }: Props) {
         submoduleTitle={submodule.title}
         sections={sections ?? []}
         enabledSectionIds={(quizSettings ?? []).map((q) => q.section_id)}
+        itemCount={signs?.length ?? 0}
       />
 
       <div className="flex flex-wrap items-start gap-2">

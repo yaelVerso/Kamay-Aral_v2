@@ -53,7 +53,8 @@ export default async function ClassModulePage({ params }: { params: Promise<{ mo
       <div className="grid grid-cols-1 gap-4 lg:px-20 lg:grid-cols-2 lg:gap-6">
         {mod.subModules.map((sm, idx) => {
           const attempt = quizAttempt(sm.id)
-          const quizEnabled = isQuizEnabled(sm.id)
+          const hasSigns = sm.items.length > 0
+          const quizEnabled = hasSigns && isQuizEnabled(sm.id)
 
           return (
             <div key={sm.id} className="rounded-2xl bg-[#FDEFCA] shadow-[0_4px_0_#EFD385] overflow-hidden">
@@ -65,22 +66,29 @@ export default async function ClassModulePage({ params }: { params: Promise<{ mo
                   <h2 className="text-2xl text-[#694B26] font-extrabold ">{sm.title}</h2>
                 </div>
 
-                <div className="grid grid-cols-2 gap-5">
-                  <Link
-                    href={`/class/${moduleId}/${sm.id}/learn`}
-                    className="flex flex-row items-center justify-center gap-1 rounded-xl bg-[#FCCF52] p-2 text-[#694B26] text-base font-bold hover:bg-[#FFC31E] active:scale-95 transition-transform"
-                  >
-                    <span className="text-lg">📖</span>
-                    Learn
-                  </Link>
-                  <Link
-                    href={`/class/${moduleId}/${sm.id}/activity`}
-                    className="flex flex-row items-center justify-center gap-1 rounded-xl bg-[#FFA93C] p-2 text-white text-base font-bold hover:bg-[#FF9A1A] active:scale-95 transition-transform"
-                  >
-                    <span className="text-lg">🎮</span>
-                    Practice
-                  </Link>
-                </div>
+                {hasSigns ? (
+                  <div className="grid grid-cols-2 gap-5">
+                    <Link
+                      href={`/class/${moduleId}/${sm.id}/learn`}
+                      className="flex flex-row items-center justify-center gap-1 rounded-xl bg-[#FCCF52] p-2 text-[#694B26] text-base font-bold hover:bg-[#FFC31E] active:scale-95 transition-transform"
+                    >
+                      <span className="text-lg">📖</span>
+                      Learn
+                    </Link>
+                    <Link
+                      href={`/class/${moduleId}/${sm.id}/activity`}
+                      className="flex flex-row items-center justify-center gap-1 rounded-xl bg-[#FFA93C] p-2 text-white text-base font-bold hover:bg-[#FF9A1A] active:scale-95 transition-transform"
+                    >
+                      <span className="text-lg">🎮</span>
+                      Practice
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 rounded-xl bg-[#CFC2B5] px-3 py-2.5 text-base text-white">
+                    <Lock className="h-4 w-4" />
+                    No signs yet
+                  </div>
+                )}
 
                 <div className="mt-3">
                   {quizEnabled && !attempt ? (
