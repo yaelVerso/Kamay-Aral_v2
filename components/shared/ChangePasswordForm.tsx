@@ -61,26 +61,14 @@ export default function ChangePasswordForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1.5">
         <Label htmlFor="current-password">Current Password</Label>
-        <Input
-          id="current-password"
-          type={showPass ? 'text' : 'password'}
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-          placeholder="Enter current password"
-          required
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="new-password">New Password</Label>
         <div className="relative">
           <Input
-            id="new-password"
+            id="current-password"
             type={showPass ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={PASSWORD_PLACEHOLDER}
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            placeholder="Enter current password"
             required
-            minLength={PASSWORD_MIN_LENGTH}
           />
           <button
             type="button"
@@ -90,6 +78,18 @@ export default function ChangePasswordForm() {
             {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="new-password">New Password</Label>
+        <Input
+          id="new-password"
+          type={showPass ? 'text' : 'password'}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={PASSWORD_PLACEHOLDER}
+          required
+          minLength={PASSWORD_MIN_LENGTH}
+        />
         <p className="text-xs text-muted-foreground">{PASSWORD_HINT}</p>
       </div>
       <div className="space-y-1.5">
