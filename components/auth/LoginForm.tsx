@@ -29,7 +29,6 @@ export default function LoginForm({ systemName, logoUrl }: Props) {
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
-  const [rememberMe, setRememberMe] = useState(true)
   const [loading, setLoading] = useState(false)
 
   async function handleLogin(e: React.FormEvent) {
@@ -46,7 +45,7 @@ export default function LoginForm({ systemName, logoUrl }: Props) {
       const resolved = await resolveLoginEmail(identifier)
       if ('error' in resolved) throw new Error(resolved.error)
 
-      const supabase = createClient({ persist: rememberMe })
+      const supabase = createClient()
       const { data, error } = await supabase.auth.signInWithPassword({ email: resolved.email, password })
       if (error) {
         if (error.message.toLowerCase().includes('banned')) {
@@ -117,16 +116,7 @@ export default function LoginForm({ systemName, logoUrl }: Props) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center gap-2 text-muted-foreground">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300"
-              />
-              Remember me
-            </label>
+          <div className="flex items-center justify-end text-sm">
             <Link href="/forgot-password" className="font-medium text-[#FFA93C] hover:underline">
               Forgot password?
             </Link>

@@ -129,5 +129,15 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
+  // Student routes don't share a path prefix like /teacher or /admin do —
+  // the (student) route group adds no URL segment — so they're listed
+  // explicitly here instead of a single startsWith check.
+  const studentRoutes = ['/dashboard', '/class', '/main', '/profile', '/progress']
+  if (studentRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`))) {
+    if (user.user_metadata?.role === 'teacher' || user.user_metadata?.role === 'admin') {
+      return withSecurityHeaders(NextResponse.redirect(new URL(destinationFor(user.user_metadata?.role), request.url)))
+    }
+  }
+
   return withSecurityHeaders(supabaseResponse)
 }
