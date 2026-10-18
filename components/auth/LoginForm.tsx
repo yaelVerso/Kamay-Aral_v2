@@ -116,7 +116,7 @@ export default function LoginForm({ systemName, logoUrl }: Props) {
             </div>
           </div>
 
-          <div className="flex items-center justify-end text-sm">
+          <div className="flex items-center justify-start text-sm">
             <Link href="/forgot-password" className="font-medium text-[#FFA93C] hover:underline">
               Forgot password?
             </Link>
