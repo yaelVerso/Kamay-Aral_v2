@@ -38,7 +38,7 @@ export default function AdminSidebar({ systemName, logoUrl }: Props) {
 
   const brandLabel = (
     <span className="flex items-center gap-2">
-      {logoUrl && <Image src={logoUrl} alt={systemName} width={28} height={28} className="h-7 w-7 object-contain" />}
+      {logoUrl && <Image src={logoUrl} alt={systemName} width={40} height={40} className="h-10 w-10 object-contain" />}
       {systemName} Admin
     </span>
   )

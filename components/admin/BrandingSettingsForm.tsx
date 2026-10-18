@@ -87,7 +87,7 @@ export default function BrandingSettingsForm({ systemName, logoUrl, primaryColor
             id="systemName"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Kamay Aral"
+            placeholder="Kamay-Aral"
           />
         </div>
 

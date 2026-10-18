@@ -7,7 +7,7 @@ export interface Branding {
   secondaryColor: string | null
 }
 
-const DEFAULT_SYSTEM_NAME = 'Kamay Aral'
+const DEFAULT_SYSTEM_NAME = 'Kamay-Aral'
 const DEFAULT_LOGO_URL = '/kamay-aral-logo.png'
 
 // publicly readable — login page needs this before the visitor is authenticated

@@ -143,7 +143,7 @@ export default function SetupPasswordPage() {
   return (
     <Card className="w-full max-w-sm shadow-lg">
       <CardHeader className="space-y-1 text-center">
-        <Image src="/kamay-aral-logo.png" alt="Kamay Aral" width={56} height={56} className="mx-auto mb-2 h-14 w-14 object-contain" />
+        <Image src="/kamay-aral-logo.png" alt="Kamay-Aral" width={80} height={80} className="mx-auto mb-2 h-20 w-20 object-contain" />
         <CardTitle className="text-xl font-bold">Set your password</CardTitle>
         <CardDescription>Choose a password to finish setting up your account.</CardDescription>
       </CardHeader>

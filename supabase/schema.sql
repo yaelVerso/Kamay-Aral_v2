@@ -1,5 +1,5 @@
 -- ============================================================
--- Kamay Aral — Supabase Schema
+-- Kamay-Aral — Supabase Schema
 -- Run this in the Supabase SQL editor to set up the database.
 -- ============================================================
 

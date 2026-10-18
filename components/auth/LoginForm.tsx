@@ -71,7 +71,7 @@ export default function LoginForm({ systemName, logoUrl }: Props) {
     <Card className="w-full max-w-sm shadow-lg">
       <CardHeader className="space-y-1 text-center pb-4">
         {logoUrl ? (
-          <Image src={logoUrl} alt={systemName} width={56} height={56} className="mx-auto mb-2 h-14 w-14 object-contain" />
+          <Image src={logoUrl} alt={systemName} width={80} height={80} className="mx-auto mb-2 h-20 w-20 object-contain" />
         ) : (
           <div className="mb-2 text-4xl">🤟</div>
         )}
