@@ -116,12 +116,6 @@ export default function LoginForm({ systemName, logoUrl }: Props) {
             </div>
           </div>
 
-          <div className="flex items-center justify-start text-sm">
-            <Link href="/forgot-password" className="font-medium text-[#FFA93C] hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-
           <Button
             type="submit"
             className="w-full p-5 bg-[#0BC2D7] hover:bg-[#00ADC0] shadow-[0_3px_0_#149AA9] font-bold text-base"
@@ -129,6 +123,12 @@ export default function LoginForm({ systemName, logoUrl }: Props) {
           >
             {loading ? 'Signing in…' : 'Sign in'}
           </Button>
+
+          <div className="flex items-center justify-center text-sm">
+            <Link href="/forgot-password" className="font-medium text-[#FFA93C] hover:underline">
+              Forgot password?
+            </Link>
+          </div>
 
           <p className="text-center text-xs text-muted-foreground">
             Accounts are created by admin.
