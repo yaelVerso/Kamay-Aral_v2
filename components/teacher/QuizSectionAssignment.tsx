@@ -28,7 +28,7 @@ export default function QuizSectionAssignment({ submoduleId, submoduleTitle, sec
     return (
       <div className="rounded-xl border bg-card p-4 shadow-sm">
         <h2 className="font-semibold mb-1">Quiz Settings</h2>
-        <p className="text-sm text-muted-foreground">You don&apos;t have any sections yet — create one in Class Management first.</p>
+        <p className="text-sm text-muted-foreground">You don&apos;t have any sections yet — create one in Section Management first.</p>
       </div>
     )
   }

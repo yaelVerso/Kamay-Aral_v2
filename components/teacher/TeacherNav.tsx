@@ -13,7 +13,7 @@ const navItemClass = 'flex items-center gap-2 rounded-md px-6 py-3 text-sm font-
 
 const links = [
   { href: '/teacher/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/teacher/sections', label: 'Class Management', icon: Users },
+  { href: '/teacher/sections', label: 'Section Management', icon: Users },
   { href: '/teacher/modules', label: 'Modules Management', icon: BookOpen },
 ]
 

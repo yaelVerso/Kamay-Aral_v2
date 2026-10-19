@@ -325,6 +325,36 @@ export async function createSectionForTeacherAction(payload: { teacherId: string
   })
 }
 
+export async function renameSectionAction(sectionId: string, name: string) {
+  const trimmed = name.trim()
+  if (!trimmed) throw new Error('Section name cannot be empty')
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const isAdmin = user.user_metadata?.role === 'admin'
+  const client = isAdmin ? createAdminClient() : supabase
+
+  const { data: section } = await client
+    .from('sections')
+    .select('id, name, teacher_id')
+    .eq('id', sectionId)
+    .single()
+  if (!section) throw new Error('Section not found')
+  if (!isAdmin && section.teacher_id !== user.id) throw new Error('Not authorized')
+
+  const { error } = await client.from('sections').update({ name: trimmed }).eq('id', sectionId)
+  if (error) throw new Error(error.message)
+
+  await recordAuditLog({
+    action: 'section.rename',
+    description: `renamed section ${section.name} to ${trimmed}`,
+    sectionId: section.id,
+    sectionName: trimmed,
+  })
+}
+
 export async function deleteSectionAction(sectionId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

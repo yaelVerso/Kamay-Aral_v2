@@ -5,6 +5,7 @@ import { ChevronLeft } from 'lucide-react'
 import SectionDetailView from '@/components/shared/SectionDetailView'
 import type { ModuleOption } from '@/components/shared/SectionPerformanceList'
 import DeleteSectionButton from '@/components/shared/DeleteSectionButton'
+import EditSectionNameButton from '@/components/shared/EditSectionNameButton'
 import GenerateSectionReportButton from '@/components/shared/GenerateSectionReportButton'
 import { getCustomModulesForSection } from '@/lib/queries/customContent'
 import { getAllAdminModules } from '@/lib/queries/adminContent'
@@ -83,6 +84,7 @@ export default async function SectionDetailPage({ params }: Props) {
         </div>
         <div className="flex items-center gap-2">
           <GenerateSectionReportButton sectionId={sectionId} sectionName={section.name} modules={pickableModules} />
+          <EditSectionNameButton sectionId={sectionId} sectionName={section.name} />
           <DeleteSectionButton sectionId={sectionId} sectionName={section.name} redirectTo="/teacher/sections" />
         </div>
       </div>

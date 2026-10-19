@@ -64,7 +64,7 @@ export default function AssignModuleSections({ moduleId, sections, assignedSecti
     return (
       <div className="rounded-xl border bg-card p-4 shadow-sm">
         <h2 className="font-semibold mb-1">Assign to Sections</h2>
-        <p className="text-sm text-muted-foreground">You don&apos;t have any sections yet — create one in Class Management first.</p>
+        <p className="text-sm text-muted-foreground">You don&apos;t have any sections yet — create one in Section Management first.</p>
       </div>
     )
   }
