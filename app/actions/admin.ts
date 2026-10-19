@@ -16,12 +16,16 @@ async function requireAdmin() {
   return { supabase, user }
 }
 
+// Returns { error } instead of throwing — a thrown Server Action error gets
+// redacted by Next.js in production (surfaces client-side as an opaque
+// "Minified React error #441" instead of this function's actual message),
+// same reasoning as resolveLoginEmail in app/actions/auth.ts.
 export async function createTeacherAction(payload: {
   firstName: string
   lastName: string
   email: string
   idNumber: string
-}) {
+}): Promise<{ error: string } | { error?: undefined }> {
   await requireAdmin()
 
   const firstName = payload.firstName.trim()
@@ -37,7 +41,7 @@ export async function createTeacherAction(payload: {
     email,
     options: { redirectTo: `${SITE_URL}/setup-password?role=teacher` },
   })
-  if (linkError) throw new Error(linkError.message)
+  if (linkError) return { error: linkError.message }
 
   const userId = linkData.user.id
 
@@ -46,8 +50,8 @@ export async function createTeacherAction(payload: {
     .insert({ id: userId, full_name: fullName, first_name: firstName, last_name: lastName, id_number: idNumber })
   if (teacherError) {
     await admin.auth.admin.deleteUser(userId)
-    if (teacherError.code === '23505') throw new Error('That ID number is already in use.')
-    throw new Error(teacherError.message)
+    if (teacherError.code === '23505') return { error: 'That ID number is already in use.' }
+    return { error: teacherError.message }
   }
 
   await admin.auth.admin.updateUserById(userId, { user_metadata: { role: 'teacher', full_name: fullName } })
@@ -55,22 +59,24 @@ export async function createTeacherAction(payload: {
   try {
     await sendTeacherInviteEmail(email, fullName, linkData.properties.action_link)
   } catch {
-    throw new Error('Account created but invite email failed to send. Use Resend Invite to try again.')
+    return { error: 'Account created but invite email failed to send. Use Resend Invite to try again.' }
   }
 
   await recordAuditLog({ action: 'teacher.create', description: `created teacher account for ${fullName}` })
+  return {}
 }
 
+// Returns { error } instead of throwing — see createTeacherAction above.
 export async function createStudentAction(payload: {
   firstName: string
   lastName: string
   email: string
   idNumber: string
   sectionId?: string | null
-}) {
+}): Promise<{ error: string } | { error?: undefined }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
+  if (!user) return { error: 'Not authenticated' }
 
   const isAdmin = user.user_metadata?.role === 'admin'
 
@@ -81,9 +87,9 @@ export async function createStudentAction(payload: {
       .eq('id', payload.sectionId)
       .eq('teacher_id', user.id)
       .single()
-    if (!section && !isAdmin) throw new Error('Section not found or access denied')
+    if (!section && !isAdmin) return { error: 'Section not found or access denied' }
   } else if (!isAdmin) {
-    throw new Error('Not authorized')
+    return { error: 'Not authorized' }
   }
 
   const firstName = payload.firstName.trim()
@@ -99,7 +105,7 @@ export async function createStudentAction(payload: {
     email,
     options: { redirectTo: `${SITE_URL}/setup-password?role=student` },
   })
-  if (linkError) throw new Error(linkError.message)
+  if (linkError) return { error: linkError.message }
 
   const userId = linkData.user.id
 
@@ -114,14 +120,14 @@ export async function createStudentAction(payload: {
   })
   if (studentError) {
     await admin.auth.admin.deleteUser(userId)
-    if (studentError.code === '23505') throw new Error('That ID number is already in use.')
-    throw new Error(studentError.message)
+    if (studentError.code === '23505') return { error: 'That ID number is already in use.' }
+    return { error: studentError.message }
   }
 
   try {
     await sendStudentInviteEmail(email, fullName, linkData.properties.action_link)
   } catch {
-    throw new Error('Account created but invite email failed to send. Use Resend Invite to try again.')
+    return { error: 'Account created but invite email failed to send. Use Resend Invite to try again.' }
   }
 
   let description = `created student account for ${fullName}`
@@ -139,6 +145,7 @@ export async function createStudentAction(payload: {
     sectionId: taggedSection?.id,
     sectionName: taggedSection?.name,
   })
+  return {}
 }
 
 // accounts are deactivated (banned), never deleted — deletion is manual, in Supabase directly

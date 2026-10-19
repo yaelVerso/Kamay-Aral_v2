@@ -35,7 +35,11 @@ export default function CreateStudentDialog({ sectionId, triggerLabel = 'Create 
     e.preventDefault()
     setLoading(true)
     try {
-      await createStudentAction({ firstName, lastName, email, idNumber, sectionId })
+      const result = await createStudentAction({ firstName, lastName, email, idNumber, sectionId })
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
       toast.success(`Invite sent to ${email}`)
       setFirstName(''); setLastName(''); setEmail(''); setIdNumber(''); setOpen(false)
       router.refresh()

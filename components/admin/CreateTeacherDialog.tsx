@@ -30,7 +30,11 @@ export default function CreateTeacherDialog() {
     e.preventDefault()
     setLoading(true)
     try {
-      await createTeacherAction({ firstName, lastName, email, idNumber })
+      const result = await createTeacherAction({ firstName, lastName, email, idNumber })
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
       toast.success(`Invite sent to ${email}`)
       setFirstName(''); setLastName(''); setEmail(''); setIdNumber(''); setOpen(false)
       router.refresh()
