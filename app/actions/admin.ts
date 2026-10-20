@@ -16,6 +16,18 @@ async function requireAdmin() {
   return { supabase, user }
 }
 
+// Supabase's admin auth API sometimes returns a duplicate-email failure with
+// a response body that has none of msg/message/error_description/error, so
+// supabase-js falls back to JSON.stringify()'ing it — authError.message ends
+// up being the literal string "{}" instead of anything readable. The error
+// code isn't reliably populated for this case either, so treat any blank or
+// "{}" message as "email already in use" rather than surfacing it raw.
+function readAuthEmailError(authError: { message: string; code?: string }): string {
+  if (authError.code === 'email_exists') return 'That email is already in use.'
+  if (!authError.message || authError.message === '{}') return 'That email is already in use.'
+  return authError.message
+}
+
 // Returns { error } instead of throwing — a thrown Server Action error gets
 // redacted by Next.js in production (surfaces client-side as an opaque
 // "Minified React error #441" instead of this function's actual message),
@@ -41,10 +53,7 @@ export async function createTeacherAction(payload: {
     email,
     options: { redirectTo: `${SITE_URL}/setup-password?role=teacher` },
   })
-  if (linkError) {
-    if (linkError.code === 'email_exists') return { error: 'That email is already in use.' }
-    return { error: linkError.message }
-  }
+  if (linkError) return { error: readAuthEmailError(linkError) }
 
   const userId = linkData.user.id
 
@@ -108,10 +117,7 @@ export async function createStudentAction(payload: {
     email,
     options: { redirectTo: `${SITE_URL}/setup-password?role=student` },
   })
-  if (linkError) {
-    if (linkError.code === 'email_exists') return { error: 'That email is already in use.' }
-    return { error: linkError.message }
-  }
+  if (linkError) return { error: readAuthEmailError(linkError) }
 
   const userId = linkData.user.id
 
@@ -236,13 +242,7 @@ export async function updateTeacherAction(payload: {
     email,
     user_metadata: { role: 'teacher', full_name: fullName },
   })
-  if (authError) {
-    // Supabase's duplicate-email response body is missing msg/message/error
-    // fields entirely, so supabase-js falls back to authError.message being
-    // the literal string "{}" — substitute a real message for that case.
-    if (authError.code === 'email_exists') return { error: 'That email is already in use.' }
-    return { error: authError.message }
-  }
+  if (authError) return { error: readAuthEmailError(authError) }
 
   const { error } = await admin
     .from('teachers')
@@ -275,10 +275,7 @@ export async function updateStudentAction(payload: {
   const email = payload.email.trim().toLowerCase()
 
   const { error: authError } = await admin.auth.admin.updateUserById(payload.studentId, { email })
-  if (authError) {
-    if (authError.code === 'email_exists') return { error: 'That email is already in use.' }
-    return { error: authError.message }
-  }
+  if (authError) return { error: readAuthEmailError(authError) }
 
   const { error } = await admin
     .from('students')
