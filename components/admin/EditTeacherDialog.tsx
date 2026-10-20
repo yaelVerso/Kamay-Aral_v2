@@ -38,7 +38,11 @@ export default function EditTeacherDialog({ teacherId, firstName: initialFirst, 
     e.preventDefault()
     setLoading(true)
     try {
-      await updateTeacherAction({ teacherId, firstName, lastName, email, idNumber })
+      const result = await updateTeacherAction({ teacherId, firstName, lastName, email, idNumber })
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
       toast.success('Teacher account updated')
       setOpen(false)
       router.refresh()

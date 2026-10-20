@@ -206,13 +206,17 @@ export async function reactivateStudentAction(studentId: string) {
   await recordAuditLog({ action: 'student.reactivate', description: `reactivated student account for ${student?.full_name ?? 'a student'}` })
 }
 
+// Returns { error } instead of throwing — same reasoning as createTeacherAction:
+// Next.js redacts thrown Server Action errors in production, which surfaced
+// as an opaque "Minified React error #441" instead of e.g. "no changes" or
+// "ID number already in use" when editing with unchanged/duplicate values.
 export async function updateTeacherAction(payload: {
   teacherId: string
   firstName: string
   lastName: string
   idNumber: string
   email: string
-}) {
+}): Promise<{ error: string } | { error?: undefined }> {
   await requireAdmin()
   const admin = createAdminClient()
 
@@ -226,18 +230,19 @@ export async function updateTeacherAction(payload: {
     email,
     user_metadata: { role: 'teacher', full_name: fullName },
   })
-  if (authError) throw new Error(authError.message)
+  if (authError) return { error: authError.message }
 
   const { error } = await admin
     .from('teachers')
     .update({ full_name: fullName, first_name: firstName, last_name: lastName, id_number: idNumber })
     .eq('id', payload.teacherId)
   if (error) {
-    if (error.code === '23505') throw new Error('That ID number is already in use.')
-    throw new Error(error.message)
+    if (error.code === '23505') return { error: 'That ID number is already in use.' }
+    return { error: error.message }
   }
 
   await recordAuditLog({ action: 'teacher.update', description: `updated teacher account for ${fullName}` })
+  return {}
 }
 
 export async function updateStudentAction(payload: {
@@ -247,7 +252,7 @@ export async function updateStudentAction(payload: {
   idNumber: string
   email: string
   sectionId: string | null
-}) {
+}): Promise<{ error: string } | { error?: undefined }> {
   await requireAdmin()
   const admin = createAdminClient()
 
@@ -258,18 +263,19 @@ export async function updateStudentAction(payload: {
   const email = payload.email.trim().toLowerCase()
 
   const { error: authError } = await admin.auth.admin.updateUserById(payload.studentId, { email })
-  if (authError) throw new Error(authError.message)
+  if (authError) return { error: authError.message }
 
   const { error } = await admin
     .from('students')
     .update({ full_name: fullName, first_name: firstName, last_name: lastName, id_number: idNumber, email, section_id: payload.sectionId })
     .eq('id', payload.studentId)
   if (error) {
-    if (error.code === '23505') throw new Error('That ID number is already in use.')
-    throw new Error(error.message)
+    if (error.code === '23505') return { error: 'That ID number is already in use.' }
+    return { error: error.message }
   }
 
   await recordAuditLog({ action: 'student.update', description: `updated student account for ${fullName}` })
+  return {}
 }
 
 export async function resendTeacherInviteAction(teacherId: string) {

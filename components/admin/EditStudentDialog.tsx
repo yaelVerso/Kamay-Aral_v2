@@ -47,7 +47,7 @@ export default function EditStudentDialog({ studentId, firstName: initialFirst, 
     e.preventDefault()
     setLoading(true)
     try {
-      await updateStudentAction({
+      const result = await updateStudentAction({
         studentId,
         firstName,
         lastName,
@@ -55,6 +55,10 @@ export default function EditStudentDialog({ studentId, firstName: initialFirst, 
         idNumber,
         sectionId: sectionId || null,
       })
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
       toast.success('Student account updated')
       setOpen(false)
       router.refresh()
