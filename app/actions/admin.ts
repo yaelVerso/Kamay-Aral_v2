@@ -41,7 +41,10 @@ export async function createTeacherAction(payload: {
     email,
     options: { redirectTo: `${SITE_URL}/setup-password?role=teacher` },
   })
-  if (linkError) return { error: linkError.message }
+  if (linkError) {
+    if (linkError.code === 'email_exists') return { error: 'That email is already in use.' }
+    return { error: linkError.message }
+  }
 
   const userId = linkData.user.id
 
@@ -105,7 +108,10 @@ export async function createStudentAction(payload: {
     email,
     options: { redirectTo: `${SITE_URL}/setup-password?role=student` },
   })
-  if (linkError) return { error: linkError.message }
+  if (linkError) {
+    if (linkError.code === 'email_exists') return { error: 'That email is already in use.' }
+    return { error: linkError.message }
+  }
 
   const userId = linkData.user.id
 
@@ -230,7 +236,13 @@ export async function updateTeacherAction(payload: {
     email,
     user_metadata: { role: 'teacher', full_name: fullName },
   })
-  if (authError) return { error: authError.message }
+  if (authError) {
+    // Supabase's duplicate-email response body is missing msg/message/error
+    // fields entirely, so supabase-js falls back to authError.message being
+    // the literal string "{}" — substitute a real message for that case.
+    if (authError.code === 'email_exists') return { error: 'That email is already in use.' }
+    return { error: authError.message }
+  }
 
   const { error } = await admin
     .from('teachers')
@@ -263,7 +275,10 @@ export async function updateStudentAction(payload: {
   const email = payload.email.trim().toLowerCase()
 
   const { error: authError } = await admin.auth.admin.updateUserById(payload.studentId, { email })
-  if (authError) return { error: authError.message }
+  if (authError) {
+    if (authError.code === 'email_exists') return { error: 'That email is already in use.' }
+    return { error: authError.message }
+  }
 
   const { error } = await admin
     .from('students')
