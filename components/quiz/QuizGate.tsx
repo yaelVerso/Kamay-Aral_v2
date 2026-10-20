@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { Module, SubModule } from '@/content/types'
 import ActivityRunner, { getQuizQuestionCount } from '@/components/activities/ActivityRunner'
 import { Button } from '@/components/ui/button'
+import { createClient } from '@/lib/supabase/client'
 
 interface Props {
   module: Module
@@ -14,6 +15,15 @@ interface Props {
 
 export default function QuizGate({ module: mod, submodule, attemptId, backHref }: Props) {
   const [started, setStarted] = useState(false)
+
+  // The attempt row is created as soon as this page loads, before the student
+  // ever chooses to start — backing out here shouldn't leave a phantom "in
+  // progress" attempt behind for the teacher/admin to see.
+  async function notYet() {
+    const supabase = createClient()
+    await supabase.from('quiz_attempts').delete().eq('id', attemptId).is('submitted_at', null)
+    history.back()
+  }
 
   if (started) {
     return (
@@ -46,7 +56,7 @@ export default function QuizGate({ module: mod, submodule, attemptId, backHref }
         >
           Start Quiz
         </Button>
-        <Button variant="outline" className="w-full" onClick={() => history.back()}>
+        <Button variant="outline" className="w-full" onClick={notYet}>
           Not yet
         </Button>
       </div>
