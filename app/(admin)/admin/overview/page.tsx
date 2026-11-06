@@ -6,9 +6,9 @@ export default async function AdminOverviewPage() {
   const supabase = await createClient()
 
   const [{ count: teacherCount }, { count: sectionCount }, { count: studentCount }, { count: moduleCount }, { data: recentLogs }] = await Promise.all([
-    supabase.from('teachers').select('id', { count: 'exact', head: true }),
+    supabase.from('teachers').select('id', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('sections').select('id', { count: 'exact', head: true }),
-    supabase.from('students').select('id', { count: 'exact', head: true }),
+    supabase.from('students').select('id', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('admin_modules').select('id', { count: 'exact', head: true }).eq('is_active', true),
     supabase
       .from('audit_logs')

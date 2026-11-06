@@ -33,7 +33,12 @@ export default function AdminModulesList({ modules, createButton }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         {createButton}
         {archivedCount > 0 && (
-          <Button variant="ghost" size="sm" onClick={() => setShowArchived((s) => !s)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hover:bg-muted hover:text-foreground"
+            onClick={() => setShowArchived((s) => !s)}
+          >
             {showArchived ? 'Hide archived modules' : `Show archived modules (${archivedCount})`}
           </Button>
         )}
