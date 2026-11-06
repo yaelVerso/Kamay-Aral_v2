@@ -45,6 +45,9 @@ export async function updateSession(request: NextRequest) {
 
   function withSecurityHeaders(response: NextResponse) {
     response.headers.set('Content-Security-Policy', csp)
+    // disqualifies the page from bfcache, so hitting back after sign-out forces a fresh
+    // request (and this middleware's auth check) instead of restoring a stale authenticated view
+    response.headers.set('Cache-Control', 'no-store, must-revalidate')
     return response
   }
 
