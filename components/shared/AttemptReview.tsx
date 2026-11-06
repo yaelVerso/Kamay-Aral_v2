@@ -16,9 +16,12 @@ export default function AttemptReview({ answers, items }: { answers: AnswerRow[]
   const [open, setOpen] = useState(false)
   const itemById = new Map(items.map((i) => [i.id, i]))
 
+  // answer_given/item_id can reference a sign that's since been deleted or archived —
+  // falls back to a readable label instead of leaking the raw id in the UI.
   function answerLabel(a: AnswerRow) {
     if (a.activity_type === 'sign-to-picture' || a.activity_type === 'drag-drop-match') {
-      return itemById.get(a.answer_given ?? '')?.label ?? a.answer_given
+      const given = itemById.get(a.answer_given ?? '')?.label
+      return given ?? (a.answer_given ? 'Deleted sign' : null)
     }
     return a.answer_given
   }
@@ -47,7 +50,7 @@ export default function AttemptReview({ answers, items }: { answers: AnswerRow[]
                     <XCircle className="h-4 w-4 shrink-0 text-red-600" />
                   )}
                   <div className="min-w-0">
-                    <p className="font-medium">{item?.label ?? a.item_id}</p>
+                    <p className="font-medium">{item?.label ?? 'Deleted sign'}</p>
                     {!a.is_correct && (
                       <p className="text-muted-foreground">
                         Answered: <strong>{answerLabel(a) || '—'}</strong>
