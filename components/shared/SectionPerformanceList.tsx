@@ -52,7 +52,10 @@ export default function SectionPerformanceList({ students, attempts, enabledSubm
   }, [modules])
 
   function matchesScope(submoduleId: string) {
-    return scope === 'all' || submoduleToModule.get(submoduleId)?.id === scope
+    if (scope === 'all') return true
+    if (scope === 'admin-all') return submoduleToModule.get(submoduleId)?.source === 'admin'
+    if (scope === 'teacher-all') return submoduleToModule.get(submoduleId)?.source === 'teacher'
+    return submoduleToModule.get(submoduleId)?.id === scope
   }
 
   const totalForScope = enabledSubmoduleIds.filter(matchesScope).length
@@ -101,6 +104,7 @@ export default function SectionPerformanceList({ students, attempts, enabledSubm
         <option value="all">All Modules</option>
         {adminModules.length > 0 && (
           <optgroup label="Admin">
+            <option value="admin-all">All Admin Modules</option>
             {adminModules.map((mod) => (
               <option key={mod.id} value={mod.id}>{mod.icon} {mod.title}</option>
             ))}
@@ -108,6 +112,7 @@ export default function SectionPerformanceList({ students, attempts, enabledSubm
         )}
         {teacherModules.length > 0 && (
           <optgroup label="Teacher">
+            <option value="teacher-all">All Teacher Modules</option>
             {teacherModules.map((mod) => (
               <option key={mod.id} value={mod.id}>{mod.icon} {mod.title}</option>
             ))}
