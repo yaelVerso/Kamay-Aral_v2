@@ -53,4 +53,6 @@ export interface Module {
   icon: string
   subModules: SubModule[]
   color: string
+  /** Who authored this module — lets UI that merges both lists filter/group by source. */
+  source: 'admin' | 'teacher'
 }

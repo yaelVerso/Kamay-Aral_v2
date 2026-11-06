@@ -159,6 +159,7 @@ export async function getAdminModuleTree(supabase: SupabaseServerClient, moduleI
     icon: mod.icon,
     subModules,
     color: mod.color,
+    source: 'admin',
   }
 }
 
@@ -255,5 +256,6 @@ export async function getAllAdminModulesWithContent(supabase: SupabaseServerClie
         items: (signs ?? []).filter((s) => s.submodule_id === sm.id).map((s) => mapSign(s, variationsBySignId.get(s.id) ?? [], overridesBySignId.get(s.id))),
         activitySequence: DEFAULT_ACTIVITY_SEQUENCE,
       })),
+    source: 'admin',
   }))
 }

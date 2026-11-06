@@ -1,6 +1,10 @@
+'use client'
+
+import { useState } from 'react'
 import type { Module } from '@/content/types'
 import ModuleAccordion from '@/components/shared/ModuleAccordion'
 import SubModuleAttemptCard from '@/components/shared/SubModuleAttemptCard'
+import { cn } from '@/lib/utils'
 
 interface AttemptRow {
   id: string
@@ -24,7 +28,12 @@ interface Props {
   practiceAnswers?: { submodule_id: string; item_id: string; activity_type: string; is_correct: boolean }[]
 }
 
+type SourceFilter = 'all' | 'admin' | 'teacher'
+
 export default function StudentProgressView({ studentName, sectionId, sectionName, modules, learnProgress, attempts, answers, practiceAnswers = [] }: Props) {
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all')
+  const visibleModules = sourceFilter === 'all' ? modules : modules.filter((mod) => mod.source === sourceFilter)
+
   function learnedCount(moduleId: string, submoduleId: string, totalItems: number) {
     const viewed = learnProgress.filter(
       (p) => p.module_id === moduleId && p.submodule_id === submoduleId
@@ -55,7 +64,25 @@ export default function StudentProgressView({ studentName, sectionId, sectionNam
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 mb-3">
-        <h2 className="font-semibold">Performance</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="font-semibold">Performance</h2>
+          <div className="flex gap-1">
+            {(['all', 'admin', 'teacher'] as const).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setSourceFilter(filter)}
+                className={cn(
+                  'rounded-full px-2.5 py-1 text-xs font-medium transition-colors border',
+                  sourceFilter === filter
+                    ? 'bg-[var(--brand-secondary)] text-white border-[var(--brand-secondary)]'
+                    : 'text-muted-foreground border-border hover:bg-muted',
+                )}
+              >
+                {filter === 'all' ? 'All' : filter === 'admin' ? 'Admin' : 'Teacher'}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-emerald-500" /> Mastered
@@ -69,7 +96,7 @@ export default function StudentProgressView({ studentName, sectionId, sectionNam
         </div>
       </div>
       <ModuleAccordion
-      sections={modules.filter((mod) => mod.subModules.length > 0).map((mod) => {
+      sections={visibleModules.filter((mod) => mod.subModules.length > 0).map((mod) => {
         const avg = moduleAverage(mod.id, mod.subModules.map((sm) => sm.id))
         return {
         id: mod.id,

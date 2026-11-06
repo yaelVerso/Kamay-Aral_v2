@@ -109,6 +109,7 @@ export async function getCustomModuleTree(supabase: SupabaseServerClient, module
     icon: mod.icon,
     subModules,
     color: mod.color,
+    source: 'teacher',
   }
 }
 
@@ -192,5 +193,6 @@ export async function getAssignedCustomModules(supabase: SupabaseServerClient): 
         items: (signs ?? []).filter((s) => s.submodule_id === sm.id).map((s) => mapSign(s, variationsBySignId)),
         activitySequence: DEFAULT_ACTIVITY_SEQUENCE,
       })),
+    source: 'teacher',
   }))
 }
