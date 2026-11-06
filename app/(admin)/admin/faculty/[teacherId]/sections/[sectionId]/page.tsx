@@ -33,14 +33,28 @@ export default async function AdminSectionDetailPage({ params }: Props) {
   }
 
   const studentIds = students?.map((s) => s.id) ?? []
-  const { data: attempts } = studentIds.length > 0
+  // Not filtered by is_active — a reset attempt (see ResetAttemptButton) should
+  // still count as "taken" until the student actually retakes it, otherwise it
+  // silently disappears from counts/averages here despite clearly having happened.
+  const { data: rawAttempts } = studentIds.length > 0
     ? await supabase
         .from('quiz_attempts')
         .select('student_id, submodule_id, score, total, submitted_at')
         .in('student_id', studentIds)
-        .eq('is_active', true)
         .not('submitted_at', 'is', null)
     : { data: [] }
+
+  // One row per (student, submodule): the most recently submitted attempt,
+  // so a reset-and-retake counts once instead of inflating the total.
+  const latestBySlot = new Map<string, NonNullable<typeof rawAttempts>[number]>()
+  for (const a of rawAttempts ?? []) {
+    const key = `${a.student_id}::${a.submodule_id}`
+    const existing = latestBySlot.get(key)
+    if (!existing || new Date(a.submitted_at!).getTime() > new Date(existing.submitted_at!).getTime()) {
+      latestBySlot.set(key, a)
+    }
+  }
+  const attempts = [...latestBySlot.values()]
 
   const enabledSubmoduleIds = [
     ...customModules.flatMap((mod) => mod.subModules.filter((sm) => isEnabled(sm.id)).map((sm) => sm.id)),
