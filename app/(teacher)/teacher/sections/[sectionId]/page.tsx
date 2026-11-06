@@ -63,8 +63,8 @@ export default async function SectionDetailPage({ params }: Props) {
   ]
 
   const moduleOptions: ModuleOption[] = [
-    ...customModules.map((mod) => ({ id: mod.id, title: mod.title, icon: mod.icon, subModuleIds: mod.subModules.map((sm) => sm.id) })),
-    ...adminModules.map((mod) => ({ id: mod.id, title: mod.title, icon: mod.icon, subModuleIds: mod.subModules.map((sm) => sm.id) })),
+    ...customModules.map((mod) => ({ id: mod.id, title: mod.title, icon: mod.icon, subModuleIds: mod.subModules.map((sm) => sm.id), source: 'teacher' as const })),
+    ...adminModules.map((mod) => ({ id: mod.id, title: mod.title, icon: mod.icon, subModuleIds: mod.subModules.map((sm) => sm.id), source: 'admin' as const })),
   ]
 
   function buildRow(student: { id: string; full_name: string; is_active?: boolean }) {
