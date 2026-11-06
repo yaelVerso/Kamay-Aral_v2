@@ -28,8 +28,6 @@ export interface ModuleOption {
   source: 'admin' | 'teacher'
 }
 
-type SourceFilter = 'all' | 'admin' | 'teacher'
-
 interface Props {
   students: StudentBasic[]
   attempts: Attempt[]
@@ -40,18 +38,10 @@ interface Props {
 
 export default function SectionPerformanceList({ students, attempts, enabledSubmoduleIds, modules }: Props) {
   const [order, setOrder] = useState<'asc' | 'desc'>('asc')
-  const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all')
   const [scope, setScope] = useState<string>('all')
 
-  const visibleModules = sourceFilter === 'all' ? modules : modules.filter((mod) => mod.source === sourceFilter)
-
-  function selectSource(filter: SourceFilter) {
-    setSourceFilter(filter)
-    // drop a specific module selection if it no longer belongs to the chosen source
-    if (scope !== 'all' && filter !== 'all' && !modules.find((m) => m.id === scope && m.source === filter)) {
-      setScope('all')
-    }
-  }
+  const adminModules = modules.filter((mod) => mod.source === 'admin')
+  const teacherModules = modules.filter((mod) => mod.source === 'teacher')
 
   const submoduleToModule = useMemo(() => {
     const map = new Map<string, ModuleOption>()
@@ -61,19 +51,16 @@ export default function SectionPerformanceList({ students, attempts, enabledSubm
     return map
   }, [modules])
 
-  /** True if a submodule matches the current scope + source filters together. */
-  function matchesFilters(submoduleId: string) {
-    const mod = submoduleToModule.get(submoduleId)
-    if (scope !== 'all') return mod?.id === scope
-    return sourceFilter === 'all' || mod?.source === sourceFilter
+  function matchesScope(submoduleId: string) {
+    return scope === 'all' || submoduleToModule.get(submoduleId)?.id === scope
   }
 
-  const totalForScope = enabledSubmoduleIds.filter(matchesFilters).length
+  const totalForScope = enabledSubmoduleIds.filter(matchesScope).length
 
   const rows = useMemo(() => {
     return students.map((student) => {
       const studentAttempts = attempts
-        .filter((a) => a.student_id === student.id && matchesFilters(a.submodule_id))
+        .filter((a) => a.student_id === student.id && matchesScope(a.submodule_id))
         .sort((a, b) => new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime())
       const percents = studentAttempts.map((a) => (a.total ? (a.score ?? 0) / a.total * 100 : 0))
       const avg = percents.length > 0 ? Math.round(percents.reduce((sum, p) => sum + p, 0) / percents.length) : null
@@ -88,7 +75,7 @@ export default function SectionPerformanceList({ students, attempts, enabledSubm
 
       return { ...student, avg, trend, completedCount: studentAttempts.length }
     })
-  }, [students, attempts, scope, sourceFilter, submoduleToModule])
+  }, [students, attempts, scope, submoduleToModule])
 
   const ranked = [...rows].sort((a, b) => {
     // no data yet always sinks to the bottom, regardless of sort direction
@@ -106,49 +93,27 @@ export default function SectionPerformanceList({ students, attempts, enabledSubm
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-1">
-        {(['all', 'admin', 'teacher'] as const).map((filter) => (
-          <button
-            key={filter}
-            onClick={() => selectSource(filter)}
-            className={cn(
-              'rounded-full px-2.5 py-1 text-xs font-medium transition-colors border',
-              sourceFilter === filter
-                ? 'bg-[var(--brand-secondary)] text-white border-[var(--brand-secondary)]'
-                : 'text-muted-foreground border-border hover:bg-muted',
-            )}
-          >
-            {filter === 'all' ? 'All' : filter === 'admin' ? 'Admin' : 'Teacher'}
-          </button>
-        ))}
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        <button
-          onClick={() => setScope('all')}
-          className={cn(
-            'rounded-full px-3 py-1.5 text-xs font-medium transition-colors border',
-            scope === 'all'
-              ? 'bg-[var(--brand-secondary)] text-white border-[var(--brand-secondary)]'
-              : 'text-muted-foreground border-border hover:bg-muted',
-          )}
-        >
-          All Modules
-        </button>
-        {visibleModules.map((mod) => (
-          <button
-            key={mod.id}
-            onClick={() => setScope(mod.id)}
-            className={cn(
-              'rounded-full px-3 py-1.5 text-xs font-medium transition-colors border',
-              scope === mod.id
-                ? 'bg-[var(--brand-secondary)] text-white border-[var(--brand-secondary)]'
-                : 'text-muted-foreground border-border hover:bg-muted',
-            )}
-          >
-            {mod.icon} {mod.title}
-          </button>
-        ))}
-      </div>
+      <select
+        value={scope}
+        onChange={(e) => setScope(e.target.value)}
+        className="w-full max-w-xs rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground"
+      >
+        <option value="all">All Modules</option>
+        {adminModules.length > 0 && (
+          <optgroup label="Admin">
+            {adminModules.map((mod) => (
+              <option key={mod.id} value={mod.id}>{mod.icon} {mod.title}</option>
+            ))}
+          </optgroup>
+        )}
+        {teacherModules.length > 0 && (
+          <optgroup label="Teacher">
+            {teacherModules.map((mod) => (
+              <option key={mod.id} value={mod.id}>{mod.icon} {mod.title}</option>
+            ))}
+          </optgroup>
+        )}
+      </select>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
