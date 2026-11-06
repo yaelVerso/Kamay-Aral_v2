@@ -36,8 +36,8 @@ export default async function SectionsPage() {
             className="flex items-center justify-between rounded-xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
-                <Users className="h-5 w-5 text-indigo-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--brand-secondary-soft)]">
+                <Users className="h-5 w-5 text-[var(--brand-secondary)]" />
               </div>
               <div>
                 <p className="font-semibold">{section.name}</p>

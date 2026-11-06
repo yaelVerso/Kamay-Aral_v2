@@ -102,8 +102,8 @@ export default async function TeacherDashboardPage() {
                 className="flex items-center justify-between rounded-xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
-                    <Users className="h-5 w-5 text-indigo-600" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--brand-secondary-soft)]">
+                    <Users className="h-5 w-5 text-[var(--brand-secondary)]" />
                   </div>
                   <div>
                     <p className="font-semibold">{section.name}</p>
@@ -117,7 +117,7 @@ export default async function TeacherDashboardPage() {
         ) : (
           <div className="mx-4 mb-4 rounded-xl border border-dashed p-8 text-center text-muted-foreground">
             <p className="mb-3">No sections yet.</p>
-            <Link href="/teacher/sections" className="text-sm font-medium text-indigo-600 hover:underline">
+            <Link href="/teacher/sections" className="text-sm font-medium text-[var(--brand-secondary)] hover:underline">
               Create your first section →
             </Link>
           </div>
