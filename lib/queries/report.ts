@@ -1,5 +1,10 @@
 import type { Module } from '@/content/types'
 
+interface LearnProgressRow {
+  submodule_id: string
+  item_id: string
+}
+
 // Below this many combined practice+quiz answers, a topic's percentage is too
 // noisy to show with any confidence — flagged as 'insufficient-data' instead
 // of a raw (often extreme) percentage. A deliberately simple threshold in
@@ -190,4 +195,92 @@ export function buildClassReportData(
     .sort((a, b) => b.topicCount - a.topicCount)
 
   return { topics: topicSummaries, studentsAcrossMultipleTopics }
+}
+
+export interface SubmoduleProgressRow {
+  moduleTitle: string
+  title: string
+  signsViewed: number
+  signsTotal: number
+  practiceCorrect: number
+  practiceTotal: number
+  /** Every submitted quiz attempt, chronological — the sample report wants every attempt shown, not just the latest. */
+  quizAttempts: { score: number; total: number }[]
+  /** Status is based on the LATEST quiz attempt only (not combined practice+quiz, unlike buildTopicReportData's status). */
+  status: TopicStatus
+}
+
+export interface ModuleAverage {
+  moduleTitle: string
+  averagePercent: number
+}
+
+export interface StudentProgressReportData {
+  submodules: SubmoduleProgressRow[]
+  moduleAverages: ModuleAverage[]
+  totalSignsViewed: number
+  totalSigns: number
+  counts: { mastered: number; needsReview: number; needsAttention: number }
+}
+
+/**
+ * Per-submodule breakdown for the "Student Progress Report" PDF — every
+ * submodule in the given modules gets a row (even with zero activity), and
+ * status/the latest-quiz percent come from the most recently submitted quiz
+ * attempt only, matching how the report presents "latest quiz" to a teacher.
+ */
+export function buildStudentProgressReportData(
+  modules: Module[],
+  learnProgress: LearnProgressRow[],
+  attempts: AttemptRow[],
+  practiceAnswers: PracticeAnswerRow[],
+): StudentProgressReportData {
+  const submodules: SubmoduleProgressRow[] = []
+  const moduleAverages: ModuleAverage[] = []
+  let totalSignsViewed = 0
+  let totalSigns = 0
+  const counts = { mastered: 0, needsReview: 0, needsAttention: 0 }
+
+  for (const mod of modules) {
+    const modulePercents: number[] = []
+
+    for (const sm of mod.subModules) {
+      const signsTotal = sm.items.length
+      const signsViewed = learnProgress.filter((r) => r.submodule_id === sm.id).length
+
+      const practice = practiceAnswers.filter((p) => p.submodule_id === sm.id)
+      const practiceCorrect = practice.filter((p) => p.is_correct).length
+      const practiceTotal = practice.length
+
+      const submitted = attempts
+        .filter((a): a is AttemptRow & { score: number; total: number } => a.submodule_id === sm.id && !!a.submitted_at && a.score !== null && a.total !== null)
+        .sort((a, b) => new Date(a.started_at).getTime() - new Date(b.started_at).getTime())
+      const quizAttempts = submitted.map((a) => ({ score: a.score, total: a.total }))
+
+      let status: TopicStatus = 'insufficient-data'
+      if (quizAttempts.length > 0) {
+        const latest = quizAttempts[quizAttempts.length - 1]
+        const latestPercent = latest.score / latest.total
+        status = latestPercent >= MASTERED_THRESHOLD ? 'mastered' : latestPercent >= NEEDS_ATTENTION_THRESHOLD ? 'needs-review' : 'needs-attention'
+        modulePercents.push(Math.round(latestPercent * 100))
+        if (status === 'mastered') counts.mastered++
+        else if (status === 'needs-review') counts.needsReview++
+        else counts.needsAttention++
+      }
+
+      totalSignsViewed += signsViewed
+      totalSigns += signsTotal
+
+      submodules.push({ moduleTitle: mod.title, title: sm.title, signsViewed, signsTotal, practiceCorrect, practiceTotal, quizAttempts, status })
+    }
+
+    if (modulePercents.length > 0) {
+      moduleAverages.push({
+        moduleTitle: mod.title,
+        averagePercent: Math.round(modulePercents.reduce((sum, p) => sum + p, 0) / modulePercents.length),
+      })
+    }
+  }
+
+  return { submodules, moduleAverages, totalSignsViewed, totalSigns, counts }
 }

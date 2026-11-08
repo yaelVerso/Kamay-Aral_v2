@@ -12,6 +12,7 @@ import ResendInviteButton from '@/components/admin/ResendInviteButton'
 import { deactivateStudentAction, reactivateStudentAction, resendStudentInviteAction } from '@/app/actions/admin'
 import { Badge } from '@/components/ui/badge'
 import GenerateReportButton from '@/components/shared/GenerateReportButton'
+import StudentProgressReportButton from '@/components/shared/StudentProgressReportButton'
 
 interface Props { params: Promise<{ studentId: string }> }
 
@@ -70,6 +71,7 @@ export default async function AdminStudentProfilePage({ params }: Props) {
         </div>
         <div className="flex items-center gap-2">
           <GenerateReportButton studentId={student.id} studentName={student.full_name} modules={pickableModules} />
+          <StudentProgressReportButton studentId={student.id} studentName={student.full_name} modules={pickableModules} />
           <EditStudentDialog
             studentId={student.id}
             firstName={student.first_name ?? ''}

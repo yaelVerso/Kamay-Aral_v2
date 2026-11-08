@@ -7,6 +7,7 @@ import { getReportableModulesForSection, toPickableFromModules } from '@/lib/que
 import StudentProgressView from '@/components/shared/StudentProgressView'
 import StudentInfoCard from '@/components/shared/StudentInfoCard'
 import GenerateReportButton from '@/components/shared/GenerateReportButton'
+import StudentProgressReportButton from '@/components/shared/StudentProgressReportButton'
 
 interface Props { params: Promise<{ sectionId: string; studentId: string }> }
 
@@ -40,7 +41,10 @@ export default async function StudentDetailPage({ params }: Props) {
           </Link>
           <h1 className="text-2xl font-bold">{student.full_name}</h1>
         </div>
-        <GenerateReportButton studentId={studentId} studentName={student.full_name} modules={pickableModules} />
+        <div className="flex items-center gap-2">
+          <GenerateReportButton studentId={studentId} studentName={student.full_name} modules={pickableModules} />
+          <StudentProgressReportButton studentId={studentId} studentName={student.full_name} modules={pickableModules} />
+        </div>
       </div>
 
       <StudentInfoCard idNumber={student.id_number} email={student.email} sectionName={section.name} />

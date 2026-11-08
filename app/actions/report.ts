@@ -3,7 +3,7 @@
 import type { Module } from '@/content/types'
 import { createClient } from '@/lib/supabase/server'
 import { getStudentProgress } from '@/lib/queries/student-progress'
-import { buildTopicReportData, buildClassReportData, type TopicReportData } from '@/lib/queries/report'
+import { buildTopicReportData, buildClassReportData, buildStudentProgressReportData, type TopicReportData, type StudentProgressReportData } from '@/lib/queries/report'
 import { getReportableModulesForSection } from '@/lib/queries/reportModules'
 import { generateStudentReport } from '@/lib/ai/studentReport'
 import { generateClassReport } from '@/lib/ai/classReport'
@@ -50,6 +50,37 @@ export async function generateReportAction(studentId: string, moduleIds?: string
   } catch {
     throw new Error('Could not generate the report right now. Please try again.')
   }
+}
+
+export async function generateStudentProgressReportAction(studentId: string, moduleIds?: string[]): Promise<StudentProgressReportData> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const isAdmin = user.user_metadata?.role === 'admin'
+
+  const { data: student } = await supabase
+    .from('students')
+    .select('section_id')
+    .eq('id', studentId)
+    .single()
+  if (!student) throw new Error('Student not found')
+
+  if (!isAdmin) {
+    if (!student.section_id) throw new Error('Not authorized')
+    const { data: section } = await supabase
+      .from('sections')
+      .select('teacher_id')
+      .eq('id', student.section_id)
+      .single()
+    if (!section || section.teacher_id !== user.id) throw new Error('Not authorized')
+  }
+
+  const allModules = await getReportableModulesForSection(supabase, student.section_id)
+  const modules = resolveModules(moduleIds, allModules)
+
+  const { learnProgress, attempts, practiceAnswers } = await getStudentProgress(supabase, studentId)
+  return buildStudentProgressReportData(modules, learnProgress, attempts, practiceAnswers)
 }
 
 export async function generateSectionReportAction(sectionId: string, moduleIds?: string[]): Promise<string> {
