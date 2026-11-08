@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
 import { createTeacherAction } from '@/app/actions/admin'
+import { isValidTeacherId, TEACHER_ID_HINT } from '@/lib/idNumberPolicy'
 
 export default function CreateTeacherDialog() {
   const router = useRouter()
@@ -28,6 +29,10 @@ export default function CreateTeacherDialog() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
+    if (!isValidTeacherId(idNumber)) {
+      toast.error(TEACHER_ID_HINT)
+      return
+    }
     setLoading(true)
     try {
       const result = await createTeacherAction({ firstName, lastName, email, idNumber })
@@ -61,7 +66,14 @@ export default function CreateTeacherDialog() {
         <form onSubmit={handleCreate} className="space-y-3">
           <div className="space-y-1">
             <Label htmlFor="idNumber">ID Number</Label>
-            <Input id="idNumber" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} required />
+            <Input
+              id="idNumber"
+              value={idNumber}
+              onChange={(e) => setIdNumber(e.target.value.replace(/\D/g, ''))}
+              inputMode="numeric"
+              placeholder={TEACHER_ID_HINT}
+              required
+            />
           </div>
           <div className="space-y-1">
             <Label htmlFor="firstName">First Name</Label>

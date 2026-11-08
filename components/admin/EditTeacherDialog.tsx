@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Pencil } from 'lucide-react'
 import { updateTeacherAction } from '@/app/actions/admin'
+import { isValidTeacherId, TEACHER_ID_HINT } from '@/lib/idNumberPolicy'
 
 interface Props {
   teacherId: string
@@ -36,6 +37,10 @@ export default function EditTeacherDialog({ teacherId, firstName: initialFirst, 
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
+    if (!isValidTeacherId(idNumber)) {
+      toast.error(TEACHER_ID_HINT)
+      return
+    }
     setLoading(true)
     try {
       const result = await updateTeacherAction({ teacherId, firstName, lastName, email, idNumber })
@@ -67,7 +72,14 @@ export default function EditTeacherDialog({ teacherId, firstName: initialFirst, 
         <form onSubmit={handleSave} className="space-y-3">
           <div className="space-y-1">
             <Label htmlFor="edit-teacher-idNumber">ID Number</Label>
-            <Input id="edit-teacher-idNumber" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} required />
+            <Input
+              id="edit-teacher-idNumber"
+              value={idNumber}
+              onChange={(e) => setIdNumber(e.target.value.replace(/\D/g, ''))}
+              inputMode="numeric"
+              placeholder={TEACHER_ID_HINT}
+              required
+            />
           </div>
           <div className="space-y-1">
             <Label htmlFor="edit-teacher-firstName">First Name</Label>

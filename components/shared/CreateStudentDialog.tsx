@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
 import { createStudentAction } from '@/app/actions/admin'
+import { isValidStudentId, STUDENT_ID_HINT, STUDENT_ID_LENGTH } from '@/lib/idNumberPolicy'
 
 interface Props {
   sectionId?: string
@@ -33,6 +34,10 @@ export default function CreateStudentDialog({ sectionId, triggerLabel = 'Create 
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
+    if (!isValidStudentId(idNumber)) {
+      toast.error(STUDENT_ID_HINT)
+      return
+    }
     setLoading(true)
     try {
       const result = await createStudentAction({ firstName, lastName, email, idNumber, sectionId })
@@ -66,7 +71,14 @@ export default function CreateStudentDialog({ sectionId, triggerLabel = 'Create 
         <form onSubmit={handleCreate} className="space-y-3">
           <div className="space-y-1">
             <Label htmlFor="idNumber">ID Number</Label>
-            <Input id="idNumber" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} required />
+            <Input
+              id="idNumber"
+              value={idNumber}
+              onChange={(e) => setIdNumber(e.target.value.replace(/\D/g, '').slice(0, STUDENT_ID_LENGTH))}
+              inputMode="numeric"
+              placeholder={STUDENT_ID_HINT}
+              required
+            />
           </div>
           <div className="space-y-1">
             <Label htmlFor="firstName">First Name</Label>

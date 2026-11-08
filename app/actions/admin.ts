@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { sendTeacherInviteEmail, sendStudentInviteEmail } from '@/lib/email/templates'
 import { recordAuditLog } from '@/app/actions/audit'
+import { isValidStudentId, isValidTeacherId, STUDENT_ID_HINT, TEACHER_ID_HINT } from '@/lib/idNumberPolicy'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
 
@@ -45,6 +46,8 @@ export async function createTeacherAction(payload: {
   const fullName = `${firstName} ${lastName}`.trim()
   const idNumber = payload.idNumber.trim()
   const email = payload.email.trim().toLowerCase()
+
+  if (!isValidTeacherId(idNumber)) return { error: TEACHER_ID_HINT }
 
   const admin = createAdminClient()
 
@@ -109,6 +112,8 @@ export async function createStudentAction(payload: {
   const fullName = `${firstName} ${lastName}`.trim()
   const email = payload.email.trim().toLowerCase()
   const idNumber = payload.idNumber.trim()
+
+  if (!isValidStudentId(idNumber)) return { error: STUDENT_ID_HINT }
 
   const admin = createAdminClient()
 
@@ -238,6 +243,8 @@ export async function updateTeacherAction(payload: {
   const idNumber = payload.idNumber.trim()
   const email = payload.email.trim().toLowerCase()
 
+  if (!isValidTeacherId(idNumber)) return { error: TEACHER_ID_HINT }
+
   const { error: authError } = await admin.auth.admin.updateUserById(payload.teacherId, {
     email,
     user_metadata: { role: 'teacher', full_name: fullName },
@@ -273,6 +280,8 @@ export async function updateStudentAction(payload: {
   const fullName = `${firstName} ${lastName}`.trim()
   const idNumber = payload.idNumber.trim()
   const email = payload.email.trim().toLowerCase()
+
+  if (!isValidStudentId(idNumber)) return { error: STUDENT_ID_HINT }
 
   const { error: authError } = await admin.auth.admin.updateUserById(payload.studentId, { email })
   if (authError) return { error: readAuthEmailError(authError) }
