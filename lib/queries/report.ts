@@ -284,3 +284,97 @@ export function buildStudentProgressReportData(
 
   return { submodules, moduleAverages, totalSignsViewed, totalSigns, counts }
 }
+
+export interface SubmoduleClassSummary {
+  moduleTitle: string
+  title: string
+  studentsWithQuizData: number
+  totalStudents: number
+  /** Average of each student's LATEST quiz percent in this submodule — null if nobody has taken it yet. */
+  averageLatestPercent: number | null
+  masteredCount: number
+  needsReviewCount: number
+  needsAttentionCount: number
+}
+
+export interface StudentClassSummary {
+  studentName: string
+  masteredCount: number
+  needsReviewCount: number
+  needsAttentionCount: number
+  signsViewed: number
+  signsTotal: number
+}
+
+export interface ClassProgressReportData {
+  sectionName: string
+  totalStudents: number
+  submodules: SubmoduleClassSummary[]
+  students: StudentClassSummary[]
+  counts: { mastered: number; needsReview: number; needsAttention: number }
+  totalSignsViewed: number
+  totalSigns: number
+}
+
+/**
+ * Aggregates each student's already-computed StudentProgressReportData
+ * (buildStudentProgressReportData output) into section-wide per-submodule
+ * and per-student summaries, without recomputing anything from raw rows —
+ * same "reuse, don't rederive" approach as buildClassReportData.
+ */
+export function buildClassProgressReportData(
+  sectionName: string,
+  perStudent: { studentName: string; data: StudentProgressReportData }[],
+): ClassProgressReportData {
+  const totalStudents = perStudent.length
+  const bySubmodule = new Map<string, { moduleTitle: string; title: string; percents: number[]; mastered: number; needsReview: number; needsAttention: number }>()
+  const counts = { mastered: 0, needsReview: 0, needsAttention: 0 }
+  let totalSignsViewed = 0
+  let totalSigns = 0
+
+  const students: StudentClassSummary[] = perStudent.map(({ studentName, data }) => {
+    totalSignsViewed += data.totalSignsViewed
+    totalSigns += data.totalSigns
+    counts.mastered += data.counts.mastered
+    counts.needsReview += data.counts.needsReview
+    counts.needsAttention += data.counts.needsAttention
+
+    for (const sm of data.submodules) {
+      const key = `${sm.moduleTitle}::${sm.title}`
+      let entry = bySubmodule.get(key)
+      if (!entry) {
+        entry = { moduleTitle: sm.moduleTitle, title: sm.title, percents: [], mastered: 0, needsReview: 0, needsAttention: 0 }
+        bySubmodule.set(key, entry)
+      }
+      if (sm.quizAttempts.length > 0) {
+        const latest = sm.quizAttempts[sm.quizAttempts.length - 1]
+        entry.percents.push(Math.round((latest.score / latest.total) * 100))
+        if (sm.status === 'mastered') entry.mastered++
+        else if (sm.status === 'needs-review') entry.needsReview++
+        else if (sm.status === 'needs-attention') entry.needsAttention++
+      }
+    }
+
+    return {
+      studentName,
+      masteredCount: data.counts.mastered,
+      needsReviewCount: data.counts.needsReview,
+      needsAttentionCount: data.counts.needsAttention,
+      signsViewed: data.totalSignsViewed,
+      signsTotal: data.totalSigns,
+    }
+  })
+
+  const submodules: SubmoduleClassSummary[] = [...bySubmodule.values()].map((e) => ({
+    moduleTitle: e.moduleTitle,
+    title: e.title,
+    studentsWithQuizData: e.percents.length,
+    totalStudents,
+    averageLatestPercent: e.percents.length > 0 ? Math.round(e.percents.reduce((sum, p) => sum + p, 0) / e.percents.length) : null,
+    masteredCount: e.mastered,
+    needsReviewCount: e.needsReview,
+    needsAttentionCount: e.needsAttention,
+  }))
+
+  return { sectionName, totalStudents, submodules, students, counts, totalSignsViewed, totalSigns }
+}

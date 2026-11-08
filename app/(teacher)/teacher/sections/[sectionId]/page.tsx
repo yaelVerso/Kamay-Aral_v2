@@ -7,6 +7,7 @@ import type { ModuleOption } from '@/components/shared/SectionPerformanceList'
 import DeleteSectionButton from '@/components/shared/DeleteSectionButton'
 import EditSectionNameButton from '@/components/shared/EditSectionNameButton'
 import GenerateSectionReportButton from '@/components/shared/GenerateSectionReportButton'
+import ClassProgressReportButton from '@/components/shared/ClassProgressReportButton'
 import { getCustomModulesForSection } from '@/lib/queries/customContent'
 import { getAllAdminModules } from '@/lib/queries/adminContent'
 import { getPickableModulesForSection } from '@/lib/queries/reportModules'
@@ -98,6 +99,7 @@ export default async function SectionDetailPage({ params }: Props) {
         </div>
         <div className="flex items-center gap-2">
           <GenerateSectionReportButton sectionId={sectionId} sectionName={section.name} modules={pickableModules} />
+          <ClassProgressReportButton sectionId={sectionId} sectionName={section.name} modules={pickableModules} />
           <EditSectionNameButton sectionId={sectionId} sectionName={section.name} />
           <DeleteSectionButton sectionId={sectionId} sectionName={section.name} redirectTo="/teacher/sections" />
         </div>

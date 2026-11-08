@@ -3,7 +3,7 @@
 import type { Module } from '@/content/types'
 import { createClient } from '@/lib/supabase/server'
 import { getStudentProgress } from '@/lib/queries/student-progress'
-import { buildTopicReportData, buildClassReportData, buildStudentProgressReportData, type TopicReportData, type StudentProgressReportData } from '@/lib/queries/report'
+import { buildTopicReportData, buildClassReportData, buildStudentProgressReportData, buildClassProgressReportData, type TopicReportData, type StudentProgressReportData, type ClassProgressReportData } from '@/lib/queries/report'
 import { getReportableModulesForSection } from '@/lib/queries/reportModules'
 import { generateStudentReport } from '@/lib/ai/studentReport'
 import { generateClassReport } from '@/lib/ai/classReport'
@@ -81,6 +81,40 @@ export async function generateStudentProgressReportAction(studentId: string, mod
 
   const { learnProgress, attempts, practiceAnswers } = await getStudentProgress(supabase, studentId)
   return buildStudentProgressReportData(modules, learnProgress, attempts, practiceAnswers)
+}
+
+export async function generateClassProgressReportAction(sectionId: string, moduleIds?: string[]): Promise<ClassProgressReportData> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const isAdmin = user.user_metadata?.role === 'admin'
+
+  const { data: section } = await supabase
+    .from('sections')
+    .select('name, teacher_id')
+    .eq('id', sectionId)
+    .single()
+  if (!section) throw new Error('Section not found')
+  if (!isAdmin && section.teacher_id !== user.id) throw new Error('Not authorized')
+
+  const { data: students } = await supabase
+    .from('students')
+    .select('id, full_name')
+    .eq('section_id', sectionId)
+  if (!students || students.length === 0) throw new Error(`${section.name} has no students yet.`)
+
+  const allModules = await getReportableModulesForSection(supabase, sectionId)
+  const modules = resolveModules(moduleIds, allModules)
+
+  const perStudent = await Promise.all(
+    students.map(async (s) => {
+      const { learnProgress, attempts, practiceAnswers } = await getStudentProgress(supabase, s.id)
+      return { studentName: s.full_name, data: buildStudentProgressReportData(modules, learnProgress, attempts, practiceAnswers) }
+    }),
+  )
+
+  return buildClassProgressReportData(section.name, perStudent)
 }
 
 export async function generateSectionReportAction(sectionId: string, moduleIds?: string[]): Promise<string> {
