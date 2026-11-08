@@ -3,12 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import ChangePasswordForm from '@/components/shared/ChangePasswordForm'
 import FontSizeControl from '@/components/shared/FontSizeControl'
 import BrandingSettingsForm from '@/components/admin/BrandingSettingsForm'
+import LegalContentForm from '@/components/admin/LegalContentForm'
 import { getBranding } from '@/lib/queries/branding'
+import { getLegalDocument } from '@/lib/queries/legal'
 
 export default async function AdminSettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const branding = await getBranding()
+  const legalDocument = await getLegalDocument()
 
   return (
     <div className="space-y-6">
@@ -57,6 +60,15 @@ export default async function AdminSettingsPage() {
               primaryColor={branding.primaryColor ?? '#007B89'}
               secondaryColor={branding.secondaryColor ?? '#4f46e5'}
             />
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base">Terms & Privacy</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LegalContentForm content={legalDocument.content} version={legalDocument.version} />
           </CardContent>
         </Card>
       </div>

@@ -16,9 +16,9 @@ export type Database = {
         Relationships: []
       }
       students: {
-        Row: { id: string; section_id: string | null; full_name: string; email: string | null; first_name: string | null; last_name: string | null; id_number: string | null; is_active: boolean; created_at: string }
-        Insert: { id: string; section_id?: string | null; full_name: string; email?: string | null; first_name?: string | null; last_name?: string | null; id_number?: string | null; is_active?: boolean; created_at?: string }
-        Update: { id?: string; section_id?: string | null; full_name?: string; email?: string | null; first_name?: string | null; last_name?: string | null; id_number?: string | null; is_active?: boolean; created_at?: string }
+        Row: { id: string; section_id: string | null; full_name: string; email: string | null; first_name: string | null; last_name: string | null; id_number: string | null; is_active: boolean; accepted_legal_version: number; created_at: string }
+        Insert: { id: string; section_id?: string | null; full_name: string; email?: string | null; first_name?: string | null; last_name?: string | null; id_number?: string | null; is_active?: boolean; accepted_legal_version?: number; created_at?: string }
+        Update: { id?: string; section_id?: string | null; full_name?: string; email?: string | null; first_name?: string | null; last_name?: string | null; id_number?: string | null; is_active?: boolean; accepted_legal_version?: number; created_at?: string }
         Relationships: []
       }
       learn_progress: {
@@ -123,6 +123,12 @@ export type Database = {
         Update: { id?: boolean; system_name?: string | null; logo_url?: string | null; primary_color?: string | null; secondary_color?: string | null; updated_at?: string }
         Relationships: []
       }
+      legal_documents: {
+        Row: { id: boolean; content: string; version: number; updated_at: string }
+        Insert: { id?: boolean; content?: string; version?: number; updated_at?: string }
+        Update: { id?: boolean; content?: string; version?: number; updated_at?: string }
+        Relationships: []
+      }
     }
     Views: {
       user_roles: {
@@ -130,7 +136,12 @@ export type Database = {
         Relationships: []
       }
     }
-    Functions: Record<string, never>
+    Functions: {
+      accept_legal_terms: {
+        Args: Record<string, never>
+        Returns: undefined
+      }
+    }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
   }

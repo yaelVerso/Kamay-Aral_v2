@@ -797,6 +797,47 @@ on conflict (id) do update set
   allowed_mime_types = excluded.allowed_mime_types;
 
 -- ============================================================
+-- LEGAL DOCUMENT (Terms & Privacy)
+-- Singleton row for the admin-edited Terms & Privacy text shown to
+-- students. `version` increments on every save (see updateLegalDocumentAction)
+-- so a client can tell "has this changed since I last agreed" without
+-- diffing content — compared against accepted_legal_version on students,
+-- which only accept_legal_terms() below is allowed to change.
+-- ============================================================
+create table public.legal_documents (
+  id boolean primary key default true check (id),
+  content text not null default '',
+  version integer not null default 1,
+  updated_at timestamptz not null default now()
+);
+insert into public.legal_documents (id) values (true);
+
+alter table public.legal_documents enable row level security;
+
+create policy "Everyone: read legal document" on public.legal_documents
+  for select using (true);
+
+create policy "Admin: manage legal document" on public.legal_documents
+  for all using (public.is_admin()) with check (public.is_admin());
+
+alter table public.students add column accepted_legal_version integer not null default 0;
+
+-- SECURITY DEFINER so a student can record acceptance of the CURRENT
+-- version without a broad self-update policy on students — this function
+-- is the only way a student is ever allowed to change their own row.
+create or replace function public.accept_legal_terms()
+returns void
+language plpgsql security definer
+set search_path = public
+as $$
+begin
+  update public.students
+  set accepted_legal_version = (select version from public.legal_documents where id = true)
+  where id = auth.uid();
+end;
+$$;
+
+-- ============================================================
 -- USER ROLES VIEW
 -- Helper to determine if an auth.user is a teacher or student.
 -- ============================================================
