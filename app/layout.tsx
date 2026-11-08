@@ -3,6 +3,7 @@ import { Nunito } from 'next/font/google'
 import { headers } from 'next/headers'
 import { Toaster } from '@/components/ui/sonner'
 import BfcacheReload from '@/components/shared/BfcacheReload'
+import OfflineBanner from '@/components/shared/OfflineBanner'
 import { getBranding } from '@/lib/queries/branding'
 import './globals.css'
 
@@ -56,6 +57,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="min-h-full bg-background font-sans antialiased">
         <BfcacheReload />
+        <OfflineBanner />
         {children}
         <Toaster richColors position="top-center" />
       </body>

@@ -22,6 +22,9 @@ export async function getAllAuditLogsAction() {
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
+
+  await recordAuditLog({ action: 'audit_logs.export', description: `exported ${data.length} log${data.length === 1 ? '' : 's'}` })
+
   return data
 }
 
