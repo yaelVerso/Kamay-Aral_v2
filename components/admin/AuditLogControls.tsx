@@ -14,24 +14,26 @@ import {
 import { toast } from 'sonner'
 import { Download, Trash2 } from 'lucide-react'
 import { getAllAuditLogsAction, clearAuditLogsAction } from '@/app/actions/auditLogs'
+import { downloadTablePdf } from '@/lib/downloadTablePdf'
 
-function toCsvCell(value: string) {
-  return `"${value.replace(/"/g, '""')}"`
-}
-
-function downloadCsv(rows: { actor_name: string; actor_role: string; action: string; description: string; section_name: string | null; created_at: string }[]) {
-  const header = ['Actor', 'Role', 'Action', 'Description', 'Section', 'Date']
-  const lines = rows.map((r) =>
-    [r.actor_name, r.actor_role, r.action, r.description, r.section_name ?? '', r.created_at].map(toCsvCell).join(','),
-  )
-  const csv = [header.map(toCsvCell).join(','), ...lines].join('\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `audit-logs-${new Date().toISOString().slice(0, 10)}.csv`
-  link.click()
-  URL.revokeObjectURL(url)
+function downloadAuditLogsPdf(rows: { actor_name: string; actor_role: string; action: string; description: string; section_name: string | null; created_at: string }[]) {
+  const columns = [
+    { header: 'Actor', width: 85 },
+    { header: 'Role', width: 45 },
+    { header: 'Action', width: 80 },
+    { header: 'Description', width: 160 },
+    { header: 'Section', width: 65 },
+    { header: 'Date', width: 80 },
+  ]
+  const tableRows = rows.map((r) => [
+    r.actor_name,
+    r.actor_role,
+    r.action,
+    r.description,
+    r.section_name ?? '',
+    new Date(r.created_at).toLocaleString(),
+  ])
+  downloadTablePdf('Audit Logs', columns, tableRows, `audit-logs-${new Date().toISOString().slice(0, 10)}.pdf`)
 }
 
 export default function AuditLogControls() {
@@ -49,7 +51,7 @@ export default function AuditLogControls() {
         toast.error('No logs to export')
         return
       }
-      downloadCsv(rows)
+      downloadAuditLogsPdf(rows)
       setExported(true)
       toast.success(`Exported ${rows.length} log${rows.length === 1 ? '' : 's'}`)
     } catch (err: unknown) {
@@ -79,7 +81,7 @@ export default function AuditLogControls() {
       <div className="flex gap-2">
         <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
           <Download className="h-4 w-4" />
-          {exporting ? 'Exporting…' : 'Export CSV'}
+          {exporting ? 'Exporting…' : 'Export PDF'}
         </Button>
         <Button
           variant="outline"
@@ -98,7 +100,7 @@ export default function AuditLogControls() {
           <DialogHeader>
             <DialogTitle>Clear all audit logs?</DialogTitle>
             <DialogDescription>
-              This permanently deletes every log entry from the database. Make sure your CSV export finished downloading first — this can't be undone.
+              This permanently deletes every log entry from the database. Make sure your PDF export finished downloading first — this can't be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
