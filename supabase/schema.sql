@@ -933,3 +933,8 @@ grant select, insert, update on public.app_settings to service_role;
 -- go through the service-role client in app/actions/audit.ts.
 grant select on public.audit_logs to authenticated;
 grant select, insert, update, delete on public.audit_logs to service_role;
+-- legal_documents: students/teachers only ever read it (the acceptance gate
+-- and settings viewer); all writes go through the service-role client in
+-- app/actions/legal.ts.
+grant select on public.legal_documents to authenticated, anon;
+grant select, insert, update on public.legal_documents to service_role;
