@@ -19,11 +19,13 @@ export default function LegalContentForm({ content, version }: Props) {
   async function handleSave() {
     setSaving(true)
     try {
-      await updateLegalDocumentAction(text)
+      const result = await updateLegalDocumentAction(text)
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
       toast.success('Terms & Privacy updated — students will be asked to re-accept it.')
       router.refresh()
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to update Terms & Privacy')
     } finally {
       setSaving(false)
     }
