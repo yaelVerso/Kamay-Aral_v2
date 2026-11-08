@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { recordAuditLog } from '@/app/actions/audit'
 
 interface Props {
@@ -16,10 +17,10 @@ interface Props {
 
 export default function DeleteAdminSubmoduleButton({ submoduleId, submoduleTitle, moduleId }: Props) {
   const [loading, setLoading] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const router = useRouter()
 
   async function handleDelete() {
-    if (!confirm(`Delete "${submoduleTitle}"? This deletes every sign inside it, for every student. This cannot be undone.`)) return
     setLoading(true)
     try {
       const supabase = createClient()
@@ -36,15 +37,26 @@ export default function DeleteAdminSubmoduleButton({ submoduleId, submoduleTitle
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={handleDelete}
-      disabled={loading}
-      className="gap-1.5 text-red-600 hover:text-red-700"
-    >
-      <Trash2 className="h-4 w-4" />
-      Delete Sub-module
-    </Button>
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setConfirmOpen(true)}
+        disabled={loading}
+        className="gap-1.5 text-red-600 hover:text-red-700"
+      >
+        <Trash2 className="h-4 w-4" />
+        Delete Sub-module
+      </Button>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Delete sub-module?"
+        description={`Delete "${submoduleTitle}"? This deletes every sign inside it, for every student. This cannot be undone.`}
+        confirmLabel="Delete"
+        loading={loading}
+        onConfirm={handleDelete}
+      />
+    </>
   )
 }

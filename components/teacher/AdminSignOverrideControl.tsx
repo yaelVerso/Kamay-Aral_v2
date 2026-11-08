@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { toast } from 'sonner'
 import { Video } from 'lucide-react'
 import { recordAuditLog } from '@/app/actions/audit'
@@ -38,6 +39,7 @@ export default function AdminSignOverrideControl({ adminSignId, signLabel, curre
   const [open, setOpen] = useState(false)
   const [videoUrl, setVideoUrl] = useState(currentOverrideUrl ?? '')
   const [loading, setLoading] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const router = useRouter()
 
   const parsedVideo = videoUrl.trim() ? parseVideoUrl(videoUrl) : null
@@ -70,7 +72,6 @@ export default function AdminSignOverrideControl({ adminSignId, signLabel, curre
   }
 
   async function handleRemove() {
-    if (!confirm(`Revert "${signLabel}" back to admin's original video for your students?`)) return
     setLoading(true)
     try {
       const supabase = createClient()
@@ -122,7 +123,7 @@ export default function AdminSignOverrideControl({ adminSignId, signLabel, curre
           </div>
           <DialogFooter className="flex-row justify-between sm:justify-between">
             {currentOverrideUrl && (
-              <Button type="button" variant="outline" onClick={handleRemove} disabled={loading} className="text-red-600 hover:text-red-700">
+              <Button type="button" variant="outline" onClick={() => setConfirmOpen(true)} disabled={loading} className="text-red-600 hover:text-red-700">
                 Revert to admin&apos;s video
               </Button>
             )}
@@ -132,6 +133,15 @@ export default function AdminSignOverrideControl({ adminSignId, signLabel, curre
           </DialogFooter>
         </form>
       </DialogContent>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Revert to admin's video?"
+        description={`Revert "${signLabel}" back to admin's original video for your students?`}
+        confirmLabel="Revert"
+        loading={loading}
+        onConfirm={handleRemove}
+      />
     </Dialog>
   )
 }

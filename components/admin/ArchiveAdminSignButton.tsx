@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Archive, ArchiveRestore } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { recordAuditLog } from '@/app/actions/audit'
 
 interface Props {
@@ -16,14 +17,10 @@ interface Props {
 
 export default function ArchiveAdminSignButton({ signId, signLabel, isActive }: Props) {
   const [loading, setLoading] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const router = useRouter()
 
   async function handleToggle() {
-    const message = isActive
-      ? `Archive "${signLabel}"? It will be hidden from students and teachers, but can be restored later.`
-      : `Restore "${signLabel}"? It will become visible to students and teachers again.`
-    if (!confirm(message)) return
-
     setLoading(true)
     try {
       const supabase = createClient()
@@ -43,15 +40,31 @@ export default function ArchiveAdminSignButton({ signId, signLabel, isActive }: 
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="icon-xs"
-      onClick={handleToggle}
-      disabled={loading}
-      aria-label={isActive ? 'Archive sign' : 'Restore sign'}
-      className={isActive ? 'text-muted-foreground hover:text-amber-600' : 'text-emerald-600 hover:text-emerald-700'}
-    >
-      {isActive ? <Archive className="h-3.5 w-3.5" /> : <ArchiveRestore className="h-3.5 w-3.5" />}
-    </Button>
+    <>
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        onClick={() => setConfirmOpen(true)}
+        disabled={loading}
+        aria-label={isActive ? 'Archive sign' : 'Restore sign'}
+        className={isActive ? 'text-muted-foreground hover:text-amber-600' : 'text-emerald-600 hover:text-emerald-700'}
+      >
+        {isActive ? <Archive className="h-3.5 w-3.5" /> : <ArchiveRestore className="h-3.5 w-3.5" />}
+      </Button>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={isActive ? 'Archive sign?' : 'Restore sign?'}
+        description={
+          isActive
+            ? `Archive "${signLabel}"? It will be hidden from students and teachers, but can be restored later.`
+            : `Restore "${signLabel}"? It will become visible to students and teachers again.`
+        }
+        confirmLabel={isActive ? 'Archive' : 'Restore'}
+        destructive={isActive}
+        loading={loading}
+        onConfirm={handleToggle}
+      />
+    </>
   )
 }

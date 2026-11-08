@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { recordAuditLog } from '@/app/actions/audit'
 
 interface Props {
@@ -18,10 +19,10 @@ interface Props {
 
 export default function ResetAttemptButton({ attemptId, studentName, submoduleTitle, sectionId, sectionName }: Props) {
   const [loading, setLoading] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const router = useRouter()
 
   async function handleReset() {
-    if (!confirm(`Let ${studentName} retake this quiz? Their previous score stays on record.`)) return
     setLoading(true)
     try {
       const supabase = createClient()
@@ -45,15 +46,26 @@ export default function ResetAttemptButton({ attemptId, studentName, submoduleTi
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={handleReset}
-      disabled={loading}
-      className="h-7 gap-1 text-xs text-muted-foreground hover:text-destructive"
-    >
-      <RotateCcw className="h-3 w-3" />
-      Reset
-    </Button>
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setConfirmOpen(true)}
+        disabled={loading}
+        className="h-7 gap-1 text-xs text-muted-foreground hover:text-destructive"
+      >
+        <RotateCcw className="h-3 w-3" />
+        Reset
+      </Button>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Reset attempt?"
+        description={`Let ${studentName} retake this quiz? Their previous score stays on record.`}
+        confirmLabel="Reset"
+        loading={loading}
+        onConfirm={handleReset}
+      />
+    </>
   )
 }
