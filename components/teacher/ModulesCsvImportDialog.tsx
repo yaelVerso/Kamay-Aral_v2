@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { Upload } from 'lucide-react'
 import { recordAuditLog } from '@/app/actions/audit'
 import { parseVideoUrl } from '@/lib/videoEmbed'
+import { isCsvFile } from '@/lib/csvFile'
 
 interface CsvRow {
   module_title?: string
@@ -54,6 +55,11 @@ export default function ModulesCsvImportDialog() {
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    if (!isCsvFile(file)) {
+      toast.error('Please upload a .csv file')
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
     setSummary(null)
     setLoading(true)
 
