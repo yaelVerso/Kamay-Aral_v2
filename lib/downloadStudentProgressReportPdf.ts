@@ -27,7 +27,7 @@ function latestPercent(row: SubmoduleProgressRow): number | null {
   return Math.round((latest.score / latest.total) * 100)
 }
 
-export function downloadStudentProgressReportPdf(studentName: string, data: StudentProgressReportData, filename: string) {
+export function downloadStudentProgressReportPdf(studentName: string, data: StudentProgressReportData, filename: string, sectionName?: string | null) {
   const doc = new jsPDF({ unit: 'pt', format: 'letter' })
   const pageWidth = doc.internal.pageSize.getWidth()
   const pageHeight = doc.internal.pageSize.getHeight()
@@ -59,7 +59,14 @@ export function downloadStudentProgressReportPdf(studentName: string, data: Stud
   doc.setFontSize(20)
   doc.setTextColor(COLOR_NAVY)
   doc.text(`${studentName} — Progress Report`, margin, y)
-  y += 10
+  y += 16
+  if (sectionName) {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    doc.setTextColor(COLOR_MUTED)
+    doc.text(sectionName, margin, y)
+    y += 10
+  }
   doc.setDrawColor(COLOR_NAVY)
   doc.setLineWidth(1.5)
   doc.line(margin, y, pageWidth - margin, y)

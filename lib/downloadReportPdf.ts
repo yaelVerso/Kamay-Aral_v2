@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf'
 
 /** Renders a generated report's plain text into a downloadable PDF, wrapping and paginating as needed. */
-export function downloadReportPdf(title: string, reportText: string, filename: string) {
+export function downloadReportPdf(title: string, reportText: string, filename: string, subtitle?: string | null) {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' })
   const pageWidth = doc.internal.pageSize.getWidth()
   const pageHeight = doc.internal.pageSize.getHeight()
@@ -13,7 +13,17 @@ export function downloadReportPdf(title: string, reportText: string, filename: s
   doc.setFontSize(16)
   const titleLines = doc.splitTextToSize(title, usableWidth)
   doc.text(titleLines, margin, y)
-  y += titleLines.length * 20 + 16
+  y += titleLines.length * 20
+
+  if (subtitle) {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    doc.setTextColor(100, 100, 100)
+    doc.text(subtitle, margin, y)
+    doc.setTextColor(0, 0, 0)
+    y += 16
+  }
+  y += 16
 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(11)

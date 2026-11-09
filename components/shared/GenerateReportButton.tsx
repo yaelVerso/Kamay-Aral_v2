@@ -12,10 +12,11 @@ import { downloadReportPdf } from '@/lib/downloadReportPdf'
 interface Props {
   studentId: string
   studentName: string
+  sectionName: string | null
   modules: PickableModule[]
 }
 
-export default function GenerateReportButton({ studentId, studentName, modules }: Props) {
+export default function GenerateReportButton({ studentId, studentName, sectionName, modules }: Props) {
   const [open, setOpen] = useState(false)
   const [phase, setPhase] = useState<'picker' | 'loading' | 'result'>('picker')
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -43,7 +44,7 @@ export default function GenerateReportButton({ studentId, studentName, modules }
 
   function handleDownload() {
     if (!report) return
-    downloadReportPdf(`${studentName} — Progress Report`, report, `${studentName}-progress-report.pdf`)
+    downloadReportPdf(`${studentName} — Progress Report`, report, `${studentName}-progress-report.pdf`, sectionName)
   }
 
   async function handleGenerate() {
@@ -68,6 +69,7 @@ export default function GenerateReportButton({ studentId, studentName, modules }
         <DialogContent className="flex max-h-[80vh] max-w-lg flex-col">
           <DialogHeader>
             <DialogTitle>{studentName} — Progress Report</DialogTitle>
+            {sectionName && <p className="text-sm text-muted-foreground">{sectionName}</p>}
           </DialogHeader>
 
           {phase === 'picker' && (

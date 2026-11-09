@@ -70,8 +70,8 @@ export default async function AdminStudentProfilePage({ params }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <GenerateReportButton studentId={student.id} studentName={student.full_name} modules={pickableModules} />
-          <StudentProgressReportButton studentId={student.id} studentName={student.full_name} modules={pickableModules} />
+          <GenerateReportButton studentId={student.id} studentName={student.full_name} sectionName={section?.name ?? null} modules={pickableModules} />
+          <StudentProgressReportButton studentId={student.id} studentName={student.full_name} sectionName={section?.name ?? null} modules={pickableModules} />
           <EditStudentDialog
             studentId={student.id}
             firstName={student.first_name ?? ''}

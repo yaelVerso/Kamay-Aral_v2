@@ -13,10 +13,11 @@ import { downloadStudentProgressReportPdf } from '@/lib/downloadStudentProgressR
 interface Props {
   studentId: string
   studentName: string
+  sectionName: string | null
   modules: PickableModule[]
 }
 
-export default function StudentProgressReportButton({ studentId, studentName, modules }: Props) {
+export default function StudentProgressReportButton({ studentId, studentName, sectionName, modules }: Props) {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
@@ -43,7 +44,7 @@ export default function StudentProgressReportButton({ studentId, studentName, mo
     setLoading(true)
     try {
       const data = await generateStudentProgressReportAction(studentId, [...selected])
-      downloadStudentProgressReportPdf(studentName, data, `${studentName}-progress-report.pdf`)
+      downloadStudentProgressReportPdf(studentName, data, `${studentName}-progress-report.pdf`, sectionName)
       setOpen(false)
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Could not generate the report right now.')
@@ -61,6 +62,7 @@ export default function StudentProgressReportButton({ studentId, studentName, mo
         <DialogContent className="flex max-h-[80vh] max-w-lg flex-col">
           <DialogHeader>
             <DialogTitle>{studentName} — Progress Report</DialogTitle>
+            {sectionName && <p className="text-sm text-muted-foreground">{sectionName}</p>}
           </DialogHeader>
           <p className="text-sm text-muted-foreground">Choose which modules to include.</p>
           <ModuleMultiSelect modules={modules} selected={selected} onToggle={toggle} onToggleAll={toggleAll} />

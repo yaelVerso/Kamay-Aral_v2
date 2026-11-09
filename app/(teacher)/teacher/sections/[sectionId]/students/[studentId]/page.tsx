@@ -42,8 +42,8 @@ export default async function StudentDetailPage({ params }: Props) {
           <h1 className="text-2xl font-bold">{student.full_name}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <GenerateReportButton studentId={studentId} studentName={student.full_name} modules={pickableModules} />
-          <StudentProgressReportButton studentId={studentId} studentName={student.full_name} modules={pickableModules} />
+          <GenerateReportButton studentId={studentId} studentName={student.full_name} sectionName={section.name} modules={pickableModules} />
+          <StudentProgressReportButton studentId={studentId} studentName={student.full_name} sectionName={section.name} modules={pickableModules} />
         </div>
       </div>
 
