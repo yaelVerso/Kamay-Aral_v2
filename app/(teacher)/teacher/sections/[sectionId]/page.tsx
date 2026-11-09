@@ -56,7 +56,19 @@ export default async function SectionDetailPage({ params }: Props) {
       latestBySlot.set(key, a)
     }
   }
-  const attempts = [...latestBySlot.values()]
+
+  // Submodules get deleted without cascading to historical quiz_attempts
+  // rows (by design — see the orphaned-data discussion), so an attempt for
+  // a since-deleted submodule can still be sitting in latestBySlot. Every
+  // other report in the app already excludes these by only ever looking up
+  // data for submodules that currently exist; this list view needs the same
+  // filter so a deleted submodule's old score doesn't silently skew a
+  // student's displayed average or completed count.
+  const existingSubmoduleIds = new Set([
+    ...customModules.flatMap((mod) => mod.subModules.map((sm) => sm.id)),
+    ...adminModules.flatMap((mod) => mod.subModules.map((sm) => sm.id)),
+  ])
+  const attempts = [...latestBySlot.values()].filter((a) => existingSubmoduleIds.has(a.submodule_id))
 
   const enabledSubmoduleIds = [
     ...customModules.flatMap((mod) => mod.subModules.filter((sm) => isEnabled(sm.id)).map((sm) => sm.id)),
