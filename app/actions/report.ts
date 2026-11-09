@@ -114,7 +114,7 @@ export async function generateClassProgressReportAction(sectionId: string, modul
     }),
   )
 
-  return buildClassProgressReportData(section.name, perStudent)
+  return buildClassProgressReportData(section.name, modules, perStudent)
 }
 
 export async function generateSectionReportAction(sectionId: string, moduleIds?: string[]): Promise<string> {

@@ -295,73 +295,179 @@ export interface SubmoduleClassSummary {
   masteredCount: number
   needsReviewCount: number
   needsAttentionCount: number
+  /** Count of students whose latest quiz here is below NEEDS_ATTENTION_THRESHOLD. */
+  studentsBelow50: number
+  signsTotal: number
+  averageSignsViewed: number
+  studentsWithIncompleteSigns: number
+  studentsWithNoPractice: number
 }
 
-export interface StudentClassSummary {
-  studentName: string
+export interface ModuleClassSummary {
+  moduleTitle: string
+  submoduleCount: number
+  /** Average of each student's per-module average (buildStudentProgressReportData's moduleAverages) — null if nobody has quiz data in this module. */
+  averageLatestPercent: number | null
+  /** Student count with per-module data, bucketed by that module average. */
   masteredCount: number
   needsReviewCount: number
   needsAttentionCount: number
+  studentsWithData: number
   signsViewed: number
   signsTotal: number
+}
+
+export interface StudentOverallSummary {
+  studentName: string
+  /** One entry per module in class-wide module order, aligned for the heatmap — null where the student has no quiz data in that module. */
+  moduleAverages: (number | null)[]
+  /** Average of latest-quiz percent across every submodule with quiz data — null if the student hasn't taken any quiz. */
+  overallPercent: number | null
+  overallStatus: TopicStatus
+  needsAttentionSubmodules: { title: string; score: string }[]
+  retook: boolean
+  retookAndImproved: boolean
+  fullyViewedAllSubmodules: boolean
+  noPracticeSubmodules: string[]
 }
 
 export interface ClassProgressReportData {
   sectionName: string
   totalStudents: number
+  moduleOrder: string[]
+  modules: ModuleClassSummary[]
   submodules: SubmoduleClassSummary[]
-  students: StudentClassSummary[]
+  students: StudentOverallSummary[]
+  /** Student counts by OVERALL status (see StudentOverallSummary.overallStatus) — not submodule-completion counts. */
   counts: { mastered: number; needsReview: number; needsAttention: number }
   totalSignsViewed: number
   totalSigns: number
 }
 
+function bandStatus(percent: number): TopicStatus {
+  return percent / 100 >= MASTERED_THRESHOLD ? 'mastered' : percent / 100 >= NEEDS_ATTENTION_THRESHOLD ? 'needs-review' : 'needs-attention'
+}
+
 /**
  * Aggregates each student's already-computed StudentProgressReportData
- * (buildStudentProgressReportData output) into section-wide per-submodule
- * and per-student summaries, without recomputing anything from raw rows —
- * same "reuse, don't rederive" approach as buildClassReportData.
+ * (buildStudentProgressReportData output) into section-wide per-module,
+ * per-submodule, and per-student summaries, without recomputing anything
+ * from raw rows — same "reuse, don't rederive" approach as buildClassReportData.
+ * Every student has exactly one row per submodule already (even with zero
+ * activity), so there's no "missing row" case to special-case here.
  */
 export function buildClassProgressReportData(
   sectionName: string,
+  modules: Module[],
   perStudent: { studentName: string; data: StudentProgressReportData }[],
 ): ClassProgressReportData {
   const totalStudents = perStudent.length
-  const bySubmodule = new Map<string, { moduleTitle: string; title: string; percents: number[]; mastered: number; needsReview: number; needsAttention: number }>()
+  const moduleOrder = modules.map((m) => m.title)
+
+  const bySubmodule = new Map<string, { moduleTitle: string; title: string; signsTotal: number; percents: number[]; mastered: number; needsReview: number; needsAttention: number; below50: number; signsViewedSum: number; incompleteSigns: number; noPractice: number }>()
+  const byModule = new Map<string, { percents: number[]; mastered: number; needsReview: number; needsAttention: number; signsViewed: number; signsTotal: number }>()
+
   const counts = { mastered: 0, needsReview: 0, needsAttention: 0 }
   let totalSignsViewed = 0
   let totalSigns = 0
 
-  const students: StudentClassSummary[] = perStudent.map(({ studentName, data }) => {
+  const students: StudentOverallSummary[] = perStudent.map(({ studentName, data }) => {
     totalSignsViewed += data.totalSignsViewed
     totalSigns += data.totalSigns
-    counts.mastered += data.counts.mastered
-    counts.needsReview += data.counts.needsReview
-    counts.needsAttention += data.counts.needsAttention
+
+    const allLatestPercents: number[] = []
+    const needsAttentionSubmodules: { title: string; score: string }[] = []
+    const noPracticeSubmodules: string[] = []
+    let fullyViewedAllSubmodules = true
+    let hasAnySubmoduleWithSigns = false
+    let retook = false
+    let retookAndImproved = false
 
     for (const sm of data.submodules) {
-      const key = `${sm.moduleTitle}::${sm.title}`
-      let entry = bySubmodule.get(key)
-      if (!entry) {
-        entry = { moduleTitle: sm.moduleTitle, title: sm.title, percents: [], mastered: 0, needsReview: 0, needsAttention: 0 }
-        bySubmodule.set(key, entry)
+      const smKey = `${sm.moduleTitle}::${sm.title}`
+      let smEntry = bySubmodule.get(smKey)
+      if (!smEntry) {
+        smEntry = { moduleTitle: sm.moduleTitle, title: sm.title, signsTotal: sm.signsTotal, percents: [], mastered: 0, needsReview: 0, needsAttention: 0, below50: 0, signsViewedSum: 0, incompleteSigns: 0, noPractice: 0 }
+        bySubmodule.set(smKey, smEntry)
       }
+      smEntry.signsViewedSum += sm.signsViewed
+      if (sm.signsTotal > 0) {
+        hasAnySubmoduleWithSigns = true
+        if (sm.signsViewed < sm.signsTotal) {
+          smEntry.incompleteSigns++
+          fullyViewedAllSubmodules = false
+        }
+        if (sm.practiceTotal === 0) {
+          smEntry.noPractice++
+          noPracticeSubmodules.push(sm.title)
+        }
+      }
+
       if (sm.quizAttempts.length > 0) {
         const latest = sm.quizAttempts[sm.quizAttempts.length - 1]
-        entry.percents.push(Math.round((latest.score / latest.total) * 100))
-        if (sm.status === 'mastered') entry.mastered++
-        else if (sm.status === 'needs-review') entry.needsReview++
-        else if (sm.status === 'needs-attention') entry.needsAttention++
+        const latestPercent = Math.round((latest.score / latest.total) * 100)
+        smEntry.percents.push(latestPercent)
+        allLatestPercents.push(latestPercent)
+        if (sm.status === 'mastered') smEntry.mastered++
+        else if (sm.status === 'needs-review') smEntry.needsReview++
+        else if (sm.status === 'needs-attention') { smEntry.needsAttention++; smEntry.below50++ }
+
+        if (latestPercent / 100 < NEEDS_ATTENTION_THRESHOLD) {
+          needsAttentionSubmodules.push({ title: sm.title, score: `${latest.score}/${latest.total}` })
+        }
+
+        if (sm.quizAttempts.length > 1) {
+          retook = true
+          const first = sm.quizAttempts[0]
+          if (latest.score / latest.total > first.score / first.total) retookAndImproved = true
+        }
       }
     }
 
+    const moduleAverages = moduleOrder.map((title) => {
+      const found = data.moduleAverages.find((m) => m.moduleTitle === title)
+      const percent = found?.averagePercent ?? null
+
+      let modEntry = byModule.get(title)
+      if (!modEntry) {
+        modEntry = { percents: [], mastered: 0, needsReview: 0, needsAttention: 0, signsViewed: 0, signsTotal: 0 }
+        byModule.set(title, modEntry)
+      }
+      for (const sm of data.submodules) {
+        if (sm.moduleTitle === title) {
+          modEntry.signsViewed += sm.signsViewed
+          modEntry.signsTotal += sm.signsTotal
+        }
+      }
+      if (percent !== null) {
+        modEntry.percents.push(percent)
+        const status = bandStatus(percent)
+        if (status === 'mastered') modEntry.mastered++
+        else if (status === 'needs-review') modEntry.needsReview++
+        else modEntry.needsAttention++
+      }
+
+      return percent
+    })
+
+    const overallPercent = allLatestPercents.length > 0
+      ? Math.round(allLatestPercents.reduce((sum, p) => sum + p, 0) / allLatestPercents.length)
+      : null
+    const overallStatus: TopicStatus = overallPercent === null ? 'insufficient-data' : bandStatus(overallPercent)
+    if (overallStatus === 'mastered') counts.mastered++
+    else if (overallStatus === 'needs-review') counts.needsReview++
+    else if (overallStatus === 'needs-attention') counts.needsAttention++
+
     return {
       studentName,
-      masteredCount: data.counts.mastered,
-      needsReviewCount: data.counts.needsReview,
-      needsAttentionCount: data.counts.needsAttention,
-      signsViewed: data.totalSignsViewed,
-      signsTotal: data.totalSigns,
+      moduleAverages,
+      overallPercent,
+      overallStatus,
+      needsAttentionSubmodules,
+      retook,
+      retookAndImproved,
+      fullyViewedAllSubmodules: hasAnySubmoduleWithSigns && fullyViewedAllSubmodules,
+      noPracticeSubmodules,
     }
   })
 
@@ -374,7 +480,28 @@ export function buildClassProgressReportData(
     masteredCount: e.mastered,
     needsReviewCount: e.needsReview,
     needsAttentionCount: e.needsAttention,
+    studentsBelow50: e.below50,
+    signsTotal: e.signsTotal,
+    averageSignsViewed: totalStudents > 0 ? Math.round((e.signsViewedSum / totalStudents) * 10) / 10 : 0,
+    studentsWithIncompleteSigns: e.incompleteSigns,
+    studentsWithNoPractice: e.noPractice,
   }))
 
-  return { sectionName, totalStudents, submodules, students, counts, totalSignsViewed, totalSigns }
+  const moduleSummaries: ModuleClassSummary[] = moduleOrder.map((title) => {
+    const mod = modules.find((m) => m.title === title)
+    const e = byModule.get(title)
+    return {
+      moduleTitle: title,
+      submoduleCount: mod?.subModules.length ?? 0,
+      averageLatestPercent: e && e.percents.length > 0 ? Math.round(e.percents.reduce((sum, p) => sum + p, 0) / e.percents.length) : null,
+      masteredCount: e?.mastered ?? 0,
+      needsReviewCount: e?.needsReview ?? 0,
+      needsAttentionCount: e?.needsAttention ?? 0,
+      studentsWithData: e?.percents.length ?? 0,
+      signsViewed: e?.signsViewed ?? 0,
+      signsTotal: e?.signsTotal ?? 0,
+    }
+  })
+
+  return { sectionName, totalStudents, moduleOrder, modules: moduleSummaries, submodules, students, counts, totalSignsViewed, totalSigns }
 }
