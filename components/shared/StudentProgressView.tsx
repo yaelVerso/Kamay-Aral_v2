@@ -34,11 +34,15 @@ export default function StudentProgressView({ studentName, sectionId, sectionNam
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all')
   const visibleModules = sourceFilter === 'all' ? modules : modules.filter((mod) => mod.source === sourceFilter)
 
-  function learnedCount(moduleId: string, submoduleId: string, totalItems: number) {
+  function learnedCount(moduleId: string, submoduleId: string, itemIds: string[]) {
+    const currentItemIds = new Set(itemIds)
+    // A deleted sign's old learn_progress row never goes away (see the
+    // orphaned-data discussion) — without this filter, viewed can exceed
+    // the current item count (e.g. "8/7") once a viewed sign is removed.
     const viewed = learnProgress.filter(
-      (p) => p.module_id === moduleId && p.submodule_id === submoduleId
+      (p) => p.module_id === moduleId && p.submodule_id === submoduleId && currentItemIds.has(p.item_id)
     ).length
-    return `${viewed}/${totalItems}`
+    return `${viewed}/${itemIds.length}`
   }
 
   /** All attempts for a sub-module, oldest first (attempts prop is already ordered this way). */
@@ -113,7 +117,7 @@ export default function StudentProgressView({ studentName, sectionId, sectionNam
               <SubModuleAttemptCard
                 key={sm.id}
                 submodule={sm}
-                learnedLabel={learnedCount(mod.id, sm.id, sm.items.length)}
+                learnedLabel={learnedCount(mod.id, sm.id, sm.items.map((item) => item.id))}
                 attempts={getAttemptHistory(sm.id)}
                 answers={answers}
                 practiceAnswers={practiceAnswers.filter((p) => p.submodule_id === sm.id)}

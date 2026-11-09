@@ -246,7 +246,11 @@ export function buildStudentProgressReportData(
 
     for (const sm of mod.subModules) {
       const signsTotal = sm.items.length
-      const signsViewed = learnProgress.filter((r) => r.submodule_id === sm.id).length
+      const currentItemIds = new Set(sm.items.map((item) => item.id))
+      // A deleted sign's old learn_progress row never goes away, so without
+      // this filter signsViewed can exceed signsTotal once a viewed sign is
+      // removed from the submodule.
+      const signsViewed = learnProgress.filter((r) => r.submodule_id === sm.id && currentItemIds.has(r.item_id)).length
 
       const practice = practiceAnswers.filter((p) => p.submodule_id === sm.id)
       const practiceCorrect = practice.filter((p) => p.is_correct).length
