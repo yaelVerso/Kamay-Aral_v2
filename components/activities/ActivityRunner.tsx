@@ -373,7 +373,14 @@ export default function ActivityRunner({ submodule, mode, attemptId, backHref }:
         )}
         {current.type === 'sign-to-picture' && (
           <SignToPicture
-            key={stepIndex}
+            // includes item.id, not just stepIndex: practice mode rebuilds
+            // `steps` with a freshly shuffled item order right after mount
+            // (see the useEffect above, kept for SSR/hydration reasons) —
+            // stepIndex alone doesn't change when that happens, so without
+            // the item id here React would reuse this component instance
+            // and its already-computed (now stale) choices instead of
+            // remounting with the step's real item.
+            key={`${stepIndex}-${current.item.id}`}
             item={current.item}
             distractors={current.distractors ?? []}
             mode={mode}
