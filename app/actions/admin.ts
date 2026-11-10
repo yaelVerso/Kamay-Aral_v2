@@ -283,7 +283,10 @@ export async function updateStudentAction(payload: {
 
   if (!isValidStudentId(idNumber)) return { error: STUDENT_ID_HINT }
 
-  const { error: authError } = await admin.auth.admin.updateUserById(payload.studentId, { email })
+  const { error: authError } = await admin.auth.admin.updateUserById(payload.studentId, {
+    email,
+    user_metadata: { full_name: fullName },
+  })
   if (authError) return { error: readAuthEmailError(authError) }
 
   const { error } = await admin
